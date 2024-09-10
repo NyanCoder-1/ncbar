@@ -1,0 +1,8 @@
+/.*/**
+/build/**
+/bin/**
+!/*/.gitkeep
+
+# Generated files
+/thirdparty/wlr-protocols/include/**
+/thirdparty/wlr-protocols/src/**

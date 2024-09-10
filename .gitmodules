@@ -1,0 +1,6 @@
+[submodule "submodules/argparse"]
+	path = submodules/argparse
+	url = git@github.com:rue-ryuzaki/argparse.git
+[submodule "submodules/svgpp"]
+	path = submodules/svgpp
+	url = git@github.com:svgpp/svgpp.git
