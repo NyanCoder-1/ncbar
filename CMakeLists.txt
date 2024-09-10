@@ -42,7 +42,7 @@ foreach (SOURCE_FILE ${SOURCES};${HEADERS})
 endforeach ()
 
 # Thirdparty
-set(XDG_SHELL_DIR "${THIRDPARTY_DIR}/xdg-shell/include")
+set(WAYLAND_PROTOCOLS_DIR "${THIRDPARTY_DIR}/wlr-protocols/include")
 # Submodules
 set(ARGPARSE_DIR "${SUBMODULES_DIR}/argparse/include")
 
@@ -50,7 +50,7 @@ set(ARGPARSE_DIR "${SUBMODULES_DIR}/argparse/include")
 set(INCLUDE_DIR
 	"${SOURCE_DIR}/"
 	"${INCLUDE_DIR}/"
-	"${XDG_SHELL_DIR}/"
+	"${WAYLAND_PROTOCOLS_DIR}/"
 	"${ARGPARSE_DIR}/"
 	)
 
