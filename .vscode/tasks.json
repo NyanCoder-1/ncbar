@@ -1,0 +1,34 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "[ncbar] build app",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build", "${workspaceFolder}/build",
+                "-j", "${config:build_jobs}"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"],
+            "dependsOn": "prepare build app"
+        },
+        {
+            "label": "prepare build app",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "-S", "${workspaceFolder}",
+                "-B", "${workspaceFolder}/build",
+                "-DCMAKE_BUILD_TYPE=${config:cmake_build_type}"
+            ],
+            "group": {
+                "kind": "none"
+            },
+            "problemMatcher": ["$gcc"]
+        }
+    ]
+}

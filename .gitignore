@@ -1,0 +1,6 @@
+/bin
+/build
+/thirdparty/wlr-protocols/include
+/thirdparty/wlr-protocols/src
+/.cache
+/compile_commands.json
