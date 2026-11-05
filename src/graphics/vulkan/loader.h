@@ -1,0 +1,4 @@
+#ifndef GRAPHICS_VULKAN_LOADER_H
+#define GRAPHICS_VULKAN_LOADER_H
+
+#endif

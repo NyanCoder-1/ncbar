@@ -70,11 +70,17 @@ target_include_directories(stb_headers SYSTEM INTERFACE "${stb_SOURCE_DIR}")
 # set(CGLM_INCLUDE_DIR "${CGLM_DIR}/include")
 # set(STB_DIR "${SUBMODULES_DIR}/stb")
 
+find_path(VULKAN_INCLUDE_DIR
+	NAMES vulkan/vulkan.h
+	REQUIRED
+	)
+
 # Set include directories
 set(INCLUDE_DIR
 	"${SOURCE_DIR}/"
 	"${INCLUDE_DIR}/"
 	"${WAYLAND_PROTOCOLS_DIR}/"
+	${VULKAN_INCLUDE_DIR}
 	# "${CGLM_INCLUDE_DIR}/"
 	# "${STB_DIR}/"
 	)
@@ -82,8 +88,6 @@ set(INCLUDE_DIR
 add_executable(${TARGET} ${SOURCES} ${HEADERS})
 #target_compile_options(${TARGET} PRIVATE -Wall -Wextra -Wpedantic -Werror)
 # add_subdirectory("${CGLM_DIR}")
-
-find_package(Vulkan)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
@@ -98,6 +102,7 @@ endif ()
 
 target_include_directories(${TARGET} PRIVATE ${INCLUDE_DIR})
 add_definitions(-DTARGET="${TARGET}")
+target_compile_definitions(${TARGET} PRIVATE VK_NO_PROTOTYPES VK_USE_PLATFORM_WAYLAND_KHR)
 
 # Hide ZERO_CHECK and ALL_BUILD targets
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)

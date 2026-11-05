@@ -1,36 +1,15 @@
-#include "renderer.h"
-#include "wayland-common.h"
-#include "window.h"
-#include <stdio.h>
+#include "app/app.h"
 
-#define STB_DS_IMPLEMENTATION
-#include "stb_ds.h"
+int main(int argc, char **argv) {
+    struct app app = {0};
 
-int main(void) {
-    WaylandCommon wlCommon = WaylandCommon_Create();
-    if (wlCommon.success == 0) {
-        fprintf(stdout, "Wayland init bad\n");
-    } else {
-        fprintf(stdout, "Wayland init good\n");
-    }
-    Renderer renderer = Renderer_Create(wlCommon.display);
-    if (renderer.success == 0) {
-        fprintf(stdout, "Vulkan init bad\n");
-    } else {
-        fprintf(stdout, "Vulkan init good\n");
+    int status = app_init(&app);
+
+    if (status == 0) {
+        status = app_run(&app);
     }
 
-    Window wnd = {0};
-    bool windowCreated = Window_Create(&wnd, &wlCommon, &renderer);
-    if (!windowCreated || !wnd.configured) {
-        fprintf(stdout, "Window init bad\n");
-    } else {
-        fprintf(stdout, "Window init good\n");
-    }
+    app_destroy(&app);
 
-    Window_Destroy(&wnd);
-    WaylandCommon_Destroy(&wlCommon);
-    Renderer_Destroy(&renderer);
-
-    return 0;
+    return status;
 }
