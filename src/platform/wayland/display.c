@@ -3,7 +3,7 @@
 
 #include "platform/wayland/context.h"
 
-int wayland_context_init_display(struct wayland_context *wl_context) {
+enum ncbar_wayland_error wayland_context_init_display(struct wayland_context *wl_context) {
     struct wl_display *display = wl_display_connect(NULL);
     if (display == NULL) {
         return NCBAR_WAYLAND_DISPLAY_INIT_FAILED;

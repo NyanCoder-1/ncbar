@@ -22,6 +22,7 @@ struct wl_output_listener_data {
     void *userdata;
     bool initialized;
 };
-int wayland_context_init_output(struct wl_output *output, struct wl_output_listener_data *listener_data, uint32_t name, wayland_output_callback callback, void *userdata);
+enum ncbar_wayland_error wayland_context_init_output(struct wl_output *output, struct wl_output_listener_data *listener_data, uint32_t name, wayland_output_callback callback,
+                                                     void *userdata);
 
 #endif

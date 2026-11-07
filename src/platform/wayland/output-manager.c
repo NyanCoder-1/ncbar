@@ -26,7 +26,7 @@ struct wayland_output_manager {
 #define WAYLAND_OUTPUT_MANAGER_INITIAL_SIZE 4
 #define WL_OUTPUT_RELEASE_MIN_VERSION 3
 
-int wayland_context_init_output_manager(struct wayland_context *wl_context, wayland_output_callback callback, void *userdata) {
+enum ncbar_wayland_error wayland_context_init_output_manager(struct wayland_context *wl_context, wayland_output_callback callback, void *userdata) {
     struct wayland_output_manager *output_manager = (struct wayland_output_manager *)calloc(1, sizeof(struct wayland_output_manager));
     if (output_manager == NULL) {
         return NCBAR_WAYLAND_OUTPUT_MANAGER_INIT_FAILED;

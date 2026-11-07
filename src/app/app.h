@@ -23,7 +23,7 @@ struct app {
     size_t outputs_capacity;
 };
 
-int app_init(struct app *app);
+enum ncbar_app_error app_init(struct app *app);
 void app_destroy(struct app *app);
 int app_run(struct app *app);
 

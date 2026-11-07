@@ -1,6 +1,8 @@
 #include "app/app.h"
 
 int main(int argc, char **argv) {
+    (void)argc;
+    (void)argv;
     struct app app = {0};
 
     int status = app_init(&app);

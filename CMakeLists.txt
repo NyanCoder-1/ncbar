@@ -7,6 +7,7 @@ project(${PROJECT})
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 17)
+set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 
 # Enable compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -103,6 +104,16 @@ endif ()
 target_include_directories(${TARGET} PRIVATE ${INCLUDE_DIR})
 add_definitions(-DTARGET="${TARGET}")
 target_compile_definitions(${TARGET} PRIVATE VK_NO_PROTOTYPES VK_USE_PLATFORM_WAYLAND_KHR)
+
+# apply warning levels
+target_compile_options(${TARGET} PRIVATE
+  $<$<CXX_COMPILER_ID:MSVC>:/W4>
+  $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic>
+  $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wpedantic>
+  $<$<C_COMPILER_ID:MSVC>:/W4>
+  $<$<C_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic>
+  $<$<C_COMPILER_ID:Clang>:-Wall -Wextra -Wpedantic>
+)
 
 # Hide ZERO_CHECK and ALL_BUILD targets
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)

@@ -14,7 +14,7 @@ static void app_remove_output(struct app *self, const struct wayland_output_info
 
 #define APP_OUTPUTS_INITIAL_SIZE 4
 
-int app_init(struct app *app) {
+enum ncbar_app_error app_init(struct app *app) {
     if (wayland_context_init(&app->wl_context, app_on_wayland_output, app) != NCBAR_WAYLAND_OK) {
         return NCBAR_APP_WAYLAND_CONTEXT_INIT_FAILED;
     }

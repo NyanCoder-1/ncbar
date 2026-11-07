@@ -8,12 +8,12 @@
 
 static void wl_registry_on_global_listener(void *data, struct wl_registry *registry, uint32_t name, const char *interface, uint32_t version);
 static void wl_registry_on_global_remove_listener(void *data, struct wl_registry *registry, uint32_t name);
-const struct wl_registry_listener wl_registry_listener = {.global = wl_registry_on_global_listener, .global_remove = wl_registry_on_global_remove_listener};
+static const struct wl_registry_listener wl_registry_listener = {.global = wl_registry_on_global_listener, .global_remove = wl_registry_on_global_remove_listener};
 
 #define WL_OUTPUT_TARGET_VERSION 4
 #define WL_OUTPUT_MIN_VERSION 4
 
-int wayland_context_init_registry(struct wayland_context *wl_context) {
+enum ncbar_wayland_error wayland_context_init_registry(struct wayland_context *wl_context) {
     struct wl_registry *registry = wl_display_get_registry(wl_context->display);
     if (registry == NULL) {
         return NCBAR_WAYLAND_REGISTRY_OBTAIN_FAILED;
@@ -51,6 +51,7 @@ static void wl_registry_on_global_listener(void *data, struct wl_registry *regis
     }
 }
 static void wl_registry_on_global_remove_listener(void *data, struct wl_registry *registry, uint32_t name) {
+    (void)registry;
     if (data) {
         struct wayland_context *wl_context = (struct wayland_context *)data;
         wayland_output_manager_remove(wl_context->output_manager, name);

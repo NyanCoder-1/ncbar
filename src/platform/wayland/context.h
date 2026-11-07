@@ -31,12 +31,12 @@ enum ncbar_wayland_error {
     NCBAR_WAYLAND_OUTPUT_LISTENER_FAILED
 };
 
-int wayland_context_init(struct wayland_context *wl_context, wayland_output_callback callback, void *userdata);
+enum ncbar_wayland_error wayland_context_init(struct wayland_context *wl_context, wayland_output_callback callback, void *userdata);
 void wayland_context_destroy(struct wayland_context *wl_context);
 
-int wayland_context_init_display(struct wayland_context *wl_context);
-int wayland_context_init_registry(struct wayland_context *wl_context);
-int wayland_context_init_output_manager(struct wayland_context *wl_context, wayland_output_callback callback, void *userdata);
+enum ncbar_wayland_error wayland_context_init_display(struct wayland_context *wl_context);
+enum ncbar_wayland_error wayland_context_init_registry(struct wayland_context *wl_context);
+enum ncbar_wayland_error wayland_context_init_output_manager(struct wayland_context *wl_context, wayland_output_callback callback, void *userdata);
 void wayland_context_destroy_output_manager(struct wayland_context *wl_context);
 
 struct wl_display *wayland_context_get_display(struct wayland_context *context);
