@@ -1,26 +1,38 @@
 #include "app/app.h"
+#include "app/output.h"
 #include "platform/wayland/context.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 static void app_on_wayland_output(enum wayland_output_event event, const struct wayland_output_info *info, void *userdata);
+static enum ncbar_app_error app_outputs_init(struct app *self);
+static enum ncbar_app_error app_outputs_grow(struct app *self);
+static void app_outputs_destroy(struct app *self);
+static void app_add_output(struct app *self, const struct wayland_output_info *info);
+static void app_remove_output(struct app *self, const struct wayland_output_info *info);
+
+#define APP_OUTPUTS_INITIAL_SIZE 4
 
 int app_init(struct app *app) {
     if (wayland_context_init(&app->wl_context, app_on_wayland_output, app) != NCBAR_WAYLAND_OK) {
-        return 1;
+        return NCBAR_APP_WAYLAND_CONTEXT_INIT_FAILED;
     }
     printf("wayland_context init success\n");
     app->running = true;
-    return 0;
+    return NCBAR_APP_OK;
 }
-void app_destroy(struct app *app) { wayland_context_destroy(&app->wl_context); }
+void app_destroy(struct app *app) {
+    wayland_context_destroy(&app->wl_context);
+    app_outputs_destroy(app);
+}
 
 static void app_on_wayland_output(enum wayland_output_event event, const struct wayland_output_info *info, void *userdata) {
     struct app *app = userdata;
 
     switch (event) {
     case WAYLAND_OUTPUT_ADDED:
-        // Create an app_output for this monitor.
+        app_add_output(app, info);
         break;
 
     case WAYLAND_OUTPUT_CHANGED:
@@ -28,7 +40,67 @@ static void app_on_wayland_output(enum wayland_output_event event, const struct 
         break;
 
     case WAYLAND_OUTPUT_REMOVED:
-        // Destroy the corresponding app_output.
+        app_remove_output(app, info);
         break;
     }
+}
+static void app_add_output(struct app *self, const struct wayland_output_info *info) {
+    if (app_outputs_init(self) != NCBAR_APP_OK)
+        return;
+    if (app_outputs_grow(self) != NCBAR_APP_OK)
+        return;
+
+    self->outputs[self->outputs_size++] = (struct app_output){.registry_name = info->registry_name, .configured = false, .dirty = true};
+}
+static void app_remove_output(struct app *self, const struct wayland_output_info *info) {
+    size_t delta = 0;
+    for (size_t i = 0; i < self->outputs_size; i++) {
+        if (self->outputs[i].registry_name == info->registry_name) {
+            delta++;
+        } else if (delta > 0) {
+            self->outputs[i - delta] = self->outputs[i];
+        }
+    }
+    if (delta > 0) {
+        self->outputs_size -= delta;
+    }
+}
+static enum ncbar_app_error app_outputs_init(struct app *self) {
+    if (self->outputs == NULL || self->outputs_capacity == 0) {
+        size_t outputs_initial_capacity = APP_OUTPUTS_INITIAL_SIZE;
+        struct app_output *outputs_new = (struct app_output *)malloc(sizeof(struct app_output) * outputs_initial_capacity);
+        if (outputs_new != NULL) {
+            self->outputs = outputs_new;
+            self->outputs_capacity = outputs_initial_capacity;
+            self->outputs_size = 0;
+        } else {
+            return NCBAR_APP_OUTPUTS_CREATE_FAILED;
+        }
+    }
+
+    return NCBAR_APP_OK;
+}
+static enum ncbar_app_error app_outputs_grow(struct app *self) {
+    if (self->outputs_size == self->outputs_capacity) {
+        size_t new_capacity = self->outputs_capacity == 0 ? APP_OUTPUTS_INITIAL_SIZE : self->outputs_capacity * 2;
+        if (new_capacity < self->outputs_capacity || new_capacity > SIZE_MAX / sizeof(struct app_output)) {
+            return NCBAR_APP_OUTPUTS_GROW_CAPACITY_ERROR;
+        }
+        struct app_output *new_pointer = (struct app_output *)realloc(self->outputs, sizeof(struct app_output) * new_capacity);
+        if (new_pointer == NULL) {
+            return NCBAR_APP_OUTPUTS_GROW_REALLOCATE_FAILED;
+        }
+        self->outputs = new_pointer;
+        self->outputs_capacity = new_capacity;
+    }
+
+    return NCBAR_APP_OK;
+}
+static void app_outputs_destroy(struct app *self) {
+    if (self->outputs != NULL) {
+        free(self->outputs);
+    }
+    self->outputs = NULL;
+    self->outputs_capacity = 0;
+    self->outputs_size = 0;
 }
