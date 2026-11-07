@@ -19,7 +19,7 @@ static const struct wl_output_listener wl_output_listener = {
     .description = wl_output_description_listener,
 };
 
-int wayland_context_init_output(struct wl_output *output, struct wl_output_listener_data *listener_data, int32_t name, wayland_output_callback callback, void *userdata) {
+int wayland_context_init_output(struct wl_output *output, struct wl_output_listener_data *listener_data, uint32_t name, wayland_output_callback callback, void *userdata) {
     listener_data->scale = 1;
     listener_data->callback = callback;
     listener_data->userdata = userdata;

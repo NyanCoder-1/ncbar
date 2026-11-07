@@ -6,7 +6,7 @@
 
 struct app;
 struct app_output {
-    int32_t registry_name;
+    uint32_t registry_name;
 
     bool configured;
     bool dirty;

@@ -15,13 +15,13 @@ struct wl_output_listener_data {
     int32_t physical_height;
     int32_t scale;
     int32_t refresh;
-    int32_t registry_name;
+    uint32_t registry_name;
     char name[WL_OUTPUT_LISTENER_DATA_NAME_LENGTH];
 
     wayland_output_callback callback;
     void *userdata;
     bool initialized;
 };
-int wayland_context_init_output(struct wl_output *output, struct wl_output_listener_data *listener_data, int32_t name, wayland_output_callback callback, void *userdata);
+int wayland_context_init_output(struct wl_output *output, struct wl_output_listener_data *listener_data, uint32_t name, wayland_output_callback callback, void *userdata);
 
 #endif
