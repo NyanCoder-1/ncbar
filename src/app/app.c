@@ -2,7 +2,6 @@
 #include "app/output.h"
 #include "platform/wayland/context.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 
 static void app_on_wayland_output(enum wayland_output_event event, const struct wayland_output_info *info, void *userdata);
@@ -18,7 +17,6 @@ enum ncbar_app_error app_init(struct app *app) {
     if (wayland_context_init(&app->wl_context, app_on_wayland_output, app) != NCBAR_WAYLAND_OK) {
         return NCBAR_APP_WAYLAND_CONTEXT_INIT_FAILED;
     }
-    printf("wayland_context init success\n");
     app->running = true;
     return NCBAR_APP_OK;
 }

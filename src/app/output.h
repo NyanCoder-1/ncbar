@@ -1,6 +1,7 @@
 #ifndef APP_OUTPUT_H
 #define APP_OUTPUT_H
 
+#include "app/app.h"
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -12,6 +13,6 @@ struct app_output {
     bool dirty;
 };
 
-int app_render_dirty_outputs(struct app *app);
+enum ncbar_app_error app_render_dirty_outputs(struct app *app);
 
 #endif

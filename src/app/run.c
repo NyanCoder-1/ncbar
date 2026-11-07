@@ -7,14 +7,17 @@
 #include "app/output.h"
 #include "platform/wayland/context.h"
 
-int app_run(struct app *app) {
+enum ncbar_app_error app_run(struct app *app) {
     struct wl_display *display = wayland_context_get_display(&app->wl_context);
+    if (display == NULL) {
+        return NCBAR_APP_WAYLAND_DISPLAY_NULL;
+    }
 
     int display_fd = wl_display_get_fd(display);
     int epoll_fd = epoll_create1(EPOLL_CLOEXEC);
 
     if (epoll_fd < 0) {
-        return -1;
+        return NCBAR_APP_EPOLL_CREATE_FAILED;
     }
 
     struct epoll_event watched = {.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLRDHUP, .data.fd = display_fd};
@@ -22,10 +25,10 @@ int app_run(struct app *app) {
     struct epoll_event ready[8];
 
     bool read_prepared = false;
-    int status = 0;
+    enum ncbar_app_error status = NCBAR_APP_OK;
 
     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, display_fd, &watched) < 0) {
-        status = -1;
+        status = NCBAR_APP_EPOLL_ADD_FAILED;
         goto cleanup;
     }
 
@@ -38,12 +41,12 @@ int app_run(struct app *app) {
          */
         for (;;) {
             if (wl_display_dispatch_pending(display) < 0) {
-                status = -1;
+                status = NCBAR_APP_WAYLAND_DISPATCH_FAILED;
                 goto cleanup;
             }
 
-            if (app_render_dirty_outputs(app) < 0) {
-                status = -1;
+            status = app_render_dirty_outputs(app);
+            if (status != NCBAR_APP_OK) {
                 goto cleanup;
             }
 
@@ -57,7 +60,7 @@ int app_run(struct app *app) {
             }
 
             if (wl_display_get_error(display) != 0) {
-                status = -1;
+                status = NCBAR_APP_WAYLAND_DISPLAY_ERROR;
                 goto cleanup;
             }
         }
@@ -72,7 +75,7 @@ int app_run(struct app *app) {
 
         if (wl_display_flush(display) < 0) {
             if (errno != EAGAIN) {
-                status = -1;
+                status = NCBAR_APP_WAYLAND_FLUSH_FAILED;
                 goto cleanup;
             }
 
@@ -86,7 +89,7 @@ int app_run(struct app *app) {
         }
 
         if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, display_fd, &watched) < 0) {
-            status = -1;
+            status = NCBAR_APP_EPOLL_MOD_FAILED;
             goto cleanup;
         }
 
@@ -100,7 +103,7 @@ int app_run(struct app *app) {
         } while (count < 0 && errno == EINTR);
 
         if (count < 0) {
-            status = -1;
+            status = NCBAR_APP_EPOLL_WAIT_FAILED;
             goto cleanup;
         }
 
@@ -122,7 +125,7 @@ int app_run(struct app *app) {
             read_prepared = false;
 
             if (wl_display_read_events(display) < 0) {
-                status = -1;
+                status = NCBAR_APP_WAYLAND_READ_FAILED;
                 goto cleanup;
             }
         } else {
@@ -135,7 +138,7 @@ int app_run(struct app *app) {
          */
         if (events & EPOLLOUT) {
             if (wl_display_flush(display) < 0 && errno != EAGAIN) {
-                status = -1;
+                status = NCBAR_APP_WAYLAND_FLUSH_FAILED;
                 goto cleanup;
             }
         }
@@ -144,7 +147,7 @@ int app_run(struct app *app) {
          * Detect compositor disconnection.
          */
         if (events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)) {
-            status = -1;
+            status = NCBAR_APP_WAYLAND_DISCONNECTED;
             goto cleanup;
         }
     }
