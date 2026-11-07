@@ -1,3 +1,7 @@
-UseTab: Never
+---
+BasedOnStyle: LLVM
+BreakBeforeBraces: Attach
 IndentWidth: 4
-TabWidth: 4
+ColumnLimit: 180
+PointerAlignment: Right
+Language: C
