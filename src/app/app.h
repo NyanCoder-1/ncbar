@@ -10,8 +10,9 @@ struct app {
     struct wayland_context wl_context;
     bool running;
 
-    size_t output_count;
     struct app_output *outputs;
+    size_t outputs_count;
+    size_t outputs_capacity;
 };
 
 int app_init(struct app *app);

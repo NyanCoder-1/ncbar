@@ -6,9 +6,6 @@
 
 struct app;
 struct app_output {
-    uint64_t wayland_output_id;
-    struct wl_output_window *window;
-    struct vk_output *renderer;
     bool configured;
     bool dirty;
 };

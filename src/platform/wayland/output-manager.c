@@ -2,13 +2,15 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <wayland-client-core.h>
+#include <string.h>
 #include <wayland-client-protocol.h>
 
 #include "platform/wayland/context.h"
+#include "platform/wayland/output.h"
 
 struct wayland_output_wrapper {
     struct wl_output *output;
+    struct wl_output_listener_data *listener_data;
     uint32_t name;
     uint32_t version;
 };
@@ -17,16 +19,20 @@ struct wayland_output_manager {
     struct wayland_output_wrapper *outputs;
     size_t outputs_size;
     size_t outputs_capacity;
+    wayland_output_callback callback;
+    void *userdata;
 };
 
 #define WAYLAND_OUTPUT_MANAGER_INITIAL_SIZE 4
 #define WL_OUTPUT_RELEASE_MIN_VERSION 3
 
-int wayland_context_init_output_manager(struct wayland_context *wl_context) {
+int wayland_context_init_output_manager(struct wayland_context *wl_context, wayland_output_callback callback, void *userdata) {
     struct wayland_output_manager *output_manager = (struct wayland_output_manager *)calloc(1, sizeof(struct wayland_output_manager));
     if (output_manager == NULL) {
         return NCBAR_WAYLAND_OUTPUT_MANAGER_INIT_FAILED;
     }
+    output_manager->callback = callback;
+    output_manager->userdata = userdata;
     wl_context->output_manager = output_manager;
 
     return NCBAR_WAYLAND_OK;
@@ -44,8 +50,13 @@ void wayland_context_destroy_output_manager(struct wayland_context *wl_context) 
                 } else {
                     wl_proxy_destroy((struct wl_proxy *)wl_context->output_manager->outputs[i].output);
                 }
+                if (wl_context->output_manager->outputs[i].listener_data != NULL) {
+                    free(wl_context->output_manager->outputs[i].listener_data);
+                    wl_context->output_manager->outputs[i].listener_data = NULL;
+                }
             }
             free(wl_context->output_manager->outputs);
+            memset(wl_context->output_manager, 0, sizeof(struct wayland_output_manager));
         }
         free(wl_context->output_manager);
         wl_context->output_manager = NULL;
@@ -82,7 +93,15 @@ void wayland_output_manager_add(struct wayland_output_manager *self, struct wl_r
     // put to the end of array
     struct wl_output *output = wl_registry_bind(registry, name, &wl_output_interface, version);
     if (output != NULL) {
-        self->outputs[self->outputs_size++] = (struct wayland_output_wrapper){.output = output, .name = name, .version = version};
+        struct wl_output_listener_data *listener_data = (struct wl_output_listener_data *)calloc(1, sizeof(struct wl_output_listener_data));
+        if (listener_data == NULL)
+            return;
+        int result = wayland_context_init_output(output, listener_data, name, self->callback, self->userdata);
+        if (result != NCBAR_WAYLAND_OK) {
+            free(listener_data);
+            return;
+        }
+        self->outputs[self->outputs_size++] = (struct wayland_output_wrapper){.output = output, .listener_data = listener_data, .name = name, .version = version};
     }
 }
 void wayland_output_manager_remove(struct wayland_output_manager *self, uint32_t name) {
@@ -92,10 +111,18 @@ void wayland_output_manager_remove(struct wayland_output_manager *self, uint32_t
     for (size_t i = 0; i < self->outputs_size; i++) {
         if (self->outputs[i].name == name) {
             delta++;
+            if (self->callback != NULL) {
+                struct wayland_output_info info = {.output = self->outputs[i].output, .registry_name = self->outputs[i].name, .name = self->outputs[i].listener_data->name};
+                self->callback(WAYLAND_OUTPUT_REMOVED, &info, self->userdata);
+            }
             if (self->outputs[i].version >= WL_OUTPUT_RELEASE_MIN_VERSION) {
                 wl_output_release(self->outputs[i].output);
             } else {
                 wl_proxy_destroy((struct wl_proxy *)self->outputs[i].output);
+            }
+            if (self->outputs[i].listener_data != NULL) {
+                free(self->outputs[i].listener_data);
+                self->outputs[i].listener_data = NULL;
             }
         } else if (delta > 0) {
             self->outputs[i - delta] = self->outputs[i];

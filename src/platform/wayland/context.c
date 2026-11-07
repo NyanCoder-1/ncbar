@@ -2,10 +2,10 @@
 #include <wayland-client-core.h>
 #include <wayland-client-protocol.h>
 
-int wayland_context_init(struct wayland_context *wl_context) {
+int wayland_context_init(struct wayland_context *wl_context, wayland_output_callback callback, void *userdata) {
     int error = wayland_context_init_display(wl_context);
     if (error == NCBAR_WAYLAND_OK) {
-        error = wayland_context_init_output_manager(wl_context);
+        error = wayland_context_init_output_manager(wl_context, callback, userdata);
     }
     if (error == NCBAR_WAYLAND_OK) {
         error = wayland_context_init_registry(wl_context);
