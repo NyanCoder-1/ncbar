@@ -82,10 +82,21 @@ void wayland_output_manager_add(struct wayland_output_manager *self, struct wl_r
     struct wl_output *output = wl_registry_bind(registry, name, &wl_output_interface, version);
     if (output != NULL) {
         struct wl_output_listener_data *listener_data = (struct wl_output_listener_data *)calloc(1, sizeof(struct wl_output_listener_data));
-        if (listener_data == NULL)
+        if (listener_data == NULL) {
+            if (version >= WL_OUTPUT_RELEASE_MIN_VERSION) {
+                wl_output_release(output);
+            } else {
+                wl_proxy_destroy((struct wl_proxy *)output);
+            }
             return;
+        }
         int result = wayland_context_init_output(output, listener_data, name, self->callback, self->userdata);
         if (result != NCBAR_WAYLAND_OK) {
+            if (version >= WL_OUTPUT_RELEASE_MIN_VERSION) {
+                wl_output_release(output);
+            } else {
+                wl_proxy_destroy((struct wl_proxy *)output);
+            }
             free(listener_data);
             return;
         }
