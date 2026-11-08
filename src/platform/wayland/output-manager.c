@@ -23,6 +23,8 @@ struct wayland_output_manager {
     void *userdata;
 };
 
+static void wayland_output_release(struct wl_output *output, uint32_t version);
+
 #define WAYLAND_OUTPUT_MANAGER_INITIAL_SIZE 4
 #define WL_OUTPUT_RELEASE_MIN_VERSION 3
 
@@ -45,18 +47,13 @@ void wayland_context_destroy_output_manager(struct wayland_context *wl_context) 
     if (wl_context->output_manager != NULL) {
         if (wl_context->output_manager->outputs != NULL) {
             for (size_t i = 0; i < wl_context->output_manager->outputs_size; i++) {
-                if (wl_context->output_manager->outputs[i].version >= WL_OUTPUT_RELEASE_MIN_VERSION) {
-                    wl_output_release(wl_context->output_manager->outputs[i].output);
-                } else {
-                    wl_proxy_destroy((struct wl_proxy *)wl_context->output_manager->outputs[i].output);
-                }
+                wayland_output_release(wl_context->output_manager->outputs[i].output, wl_context->output_manager->outputs[i].version);
                 if (wl_context->output_manager->outputs[i].listener_data != NULL) {
                     free(wl_context->output_manager->outputs[i].listener_data);
                     wl_context->output_manager->outputs[i].listener_data = NULL;
                 }
             }
             free(wl_context->output_manager->outputs);
-            memset(wl_context->output_manager, 0, sizeof(struct wayland_output_manager));
         }
         free(wl_context->output_manager);
         wl_context->output_manager = NULL;
@@ -83,20 +80,12 @@ void wayland_output_manager_add(struct wayland_output_manager *self, struct wl_r
     if (output != NULL) {
         struct wl_output_listener_data *listener_data = (struct wl_output_listener_data *)calloc(1, sizeof(struct wl_output_listener_data));
         if (listener_data == NULL) {
-            if (version >= WL_OUTPUT_RELEASE_MIN_VERSION) {
-                wl_output_release(output);
-            } else {
-                wl_proxy_destroy((struct wl_proxy *)output);
-            }
+            wayland_output_release(output, version);
             return;
         }
         int result = wayland_context_init_output(output, listener_data, name, self->callback, self->userdata);
         if (result != NCBAR_WAYLAND_OK) {
-            if (version >= WL_OUTPUT_RELEASE_MIN_VERSION) {
-                wl_output_release(output);
-            } else {
-                wl_proxy_destroy((struct wl_proxy *)output);
-            }
+            wayland_output_release(output, version);
             free(listener_data);
             return;
         }
@@ -114,11 +103,7 @@ void wayland_output_manager_remove(struct wayland_output_manager *self, uint32_t
                 struct wayland_output_info info = {.output = self->outputs[i].output, .registry_name = self->outputs[i].name, .name = self->outputs[i].listener_data->name};
                 self->callback(WAYLAND_OUTPUT_REMOVED, &info, self->userdata);
             }
-            if (self->outputs[i].version >= WL_OUTPUT_RELEASE_MIN_VERSION) {
-                wl_output_release(self->outputs[i].output);
-            } else {
-                wl_proxy_destroy((struct wl_proxy *)self->outputs[i].output);
-            }
+            wayland_output_release(self->outputs[i].output, self->outputs[i].version);
             if (self->outputs[i].listener_data != NULL) {
                 free(self->outputs[i].listener_data);
                 self->outputs[i].listener_data = NULL;
@@ -129,5 +114,13 @@ void wayland_output_manager_remove(struct wayland_output_manager *self, uint32_t
     }
     if (delta > 0) {
         self->outputs_size -= delta;
+    }
+}
+
+static void wayland_output_release(struct wl_output *output, uint32_t version) {
+    if (version >= WL_OUTPUT_RELEASE_MIN_VERSION) {
+        wl_output_release(output);
+    } else {
+        wl_proxy_destroy((struct wl_proxy *)output);
     }
 }

@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <stdint.h>
 #include <sys/epoll.h>
 #include <unistd.h>
 #include <wayland-client-core.h>
@@ -23,7 +24,7 @@ enum ncbar_app_error app_run(struct app *app) {
     int signal_fd = app_signals_open_fd();
     if (signal_fd < 0) {
         close(epoll_fd);
-        return -1;
+        return NCBAR_APP_SIGNALS_OPEN_FAILED;
     }
     struct epoll_event signal_watched = {.events = EPOLLIN, .data.fd = signal_fd};
 
