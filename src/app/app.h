@@ -31,7 +31,7 @@ struct app {
     struct wayland_context wl_context;
     bool running;
 
-    struct app_output *outputs;
+    struct app_output **outputs;
     size_t outputs_size;
     size_t outputs_capacity;
 };
