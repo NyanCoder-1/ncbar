@@ -5,7 +5,6 @@
 #include <stdlib.h>
 
 static void app_on_wayland_output(enum wayland_output_event event, const struct wayland_output_info *info, void *userdata);
-static enum ncbar_app_error app_outputs_init(struct app *self);
 static enum ncbar_app_error app_outputs_grow(struct app *self);
 static void app_outputs_destroy(struct app *self);
 static void app_add_output(struct app *self, const struct wayland_output_info *info);
@@ -21,8 +20,8 @@ enum ncbar_app_error app_init(struct app *app) {
     return NCBAR_APP_OK;
 }
 void app_destroy(struct app *app) {
-    wayland_context_destroy(&app->wl_context);
     app_outputs_destroy(app);
+    wayland_context_destroy(&app->wl_context);
 }
 
 static void app_on_wayland_output(enum wayland_output_event event, const struct wayland_output_info *info, void *userdata) {
@@ -43,8 +42,6 @@ static void app_on_wayland_output(enum wayland_output_event event, const struct 
     }
 }
 static void app_add_output(struct app *self, const struct wayland_output_info *info) {
-    if (app_outputs_init(self) != NCBAR_APP_OK)
-        return;
     if (app_outputs_grow(self) != NCBAR_APP_OK)
         return;
 
@@ -62,21 +59,6 @@ static void app_remove_output(struct app *self, const struct wayland_output_info
     if (delta > 0) {
         self->outputs_size -= delta;
     }
-}
-static enum ncbar_app_error app_outputs_init(struct app *self) {
-    if (self->outputs == NULL || self->outputs_capacity == 0) {
-        size_t outputs_initial_capacity = APP_OUTPUTS_INITIAL_SIZE;
-        struct app_output *outputs_new = (struct app_output *)malloc(sizeof(struct app_output) * outputs_initial_capacity);
-        if (outputs_new != NULL) {
-            self->outputs = outputs_new;
-            self->outputs_capacity = outputs_initial_capacity;
-            self->outputs_size = 0;
-        } else {
-            return NCBAR_APP_OUTPUTS_CREATE_FAILED;
-        }
-    }
-
-    return NCBAR_APP_OK;
 }
 static enum ncbar_app_error app_outputs_grow(struct app *self) {
     if (self->outputs_size == self->outputs_capacity) {

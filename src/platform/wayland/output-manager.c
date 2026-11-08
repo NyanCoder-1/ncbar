@@ -65,18 +65,6 @@ void wayland_context_destroy_output_manager(struct wayland_context *wl_context) 
 void wayland_output_manager_add(struct wayland_output_manager *self, struct wl_registry *registry, uint32_t name, uint32_t version) {
     if (self == NULL)
         return;
-    // init
-    if (self->outputs == NULL || self->outputs_capacity == 0) {
-        size_t outputs_initial_capacity = WAYLAND_OUTPUT_MANAGER_INITIAL_SIZE;
-        struct wayland_output_wrapper *outputs_new = (struct wayland_output_wrapper *)malloc(sizeof(struct wayland_output_wrapper) * outputs_initial_capacity);
-        if (outputs_new != NULL) {
-            self->outputs = outputs_new;
-            self->outputs_capacity = outputs_initial_capacity;
-            self->outputs_size = 0;
-        } else {
-            return;
-        }
-    }
     // grow
     if (self->outputs_size == self->outputs_capacity) {
         size_t new_capacity = self->outputs_capacity == 0 ? WAYLAND_OUTPUT_MANAGER_INITIAL_SIZE : self->outputs_capacity * 2;
