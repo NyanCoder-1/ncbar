@@ -5,6 +5,7 @@
 
 #include "app/app.h"
 #include "app/output.h"
+#include "app/signals.h"
 #include "platform/wayland/context.h"
 
 enum ncbar_app_error app_run(struct app *app) {
@@ -19,15 +20,20 @@ enum ncbar_app_error app_run(struct app *app) {
     if (epoll_fd < 0) {
         return NCBAR_APP_EPOLL_CREATE_FAILED;
     }
+    int signal_fd = app_signals_open_fd();
+    if (signal_fd < 0) {
+        close(epoll_fd);
+        return -1;
+    }
+    struct epoll_event signal_watched = {.events = EPOLLIN, .data.fd = signal_fd};
 
     struct epoll_event watched = {.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLRDHUP, .data.fd = display_fd};
-
     struct epoll_event ready[8];
 
     bool read_prepared = false;
     enum ncbar_app_error status = NCBAR_APP_OK;
 
-    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, display_fd, &watched) < 0) {
+    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, display_fd, &watched) < 0 || epoll_ctl(epoll_fd, EPOLL_CTL_ADD, signal_fd, &signal_watched) < 0) {
         status = NCBAR_APP_EPOLL_ADD_FAILED;
         goto cleanup;
     }
@@ -44,21 +50,17 @@ enum ncbar_app_error app_run(struct app *app) {
                 status = NCBAR_APP_WAYLAND_DISPATCH_FAILED;
                 goto cleanup;
             }
-
             status = app_render_dirty_outputs(app);
             if (status != NCBAR_APP_OK) {
                 goto cleanup;
             }
-
             if (!app->running) {
                 goto cleanup;
             }
-
             if (wl_display_prepare_read(display) == 0) {
                 read_prepared = true;
                 break;
             }
-
             if (wl_display_get_error(display) != 0) {
                 status = NCBAR_APP_WAYLAND_DISPLAY_ERROR;
                 goto cleanup;
@@ -72,22 +74,17 @@ enum ncbar_app_error app_run(struct app *app) {
          * Otherwise, a writable socket would wake us constantly.
          */
         bool want_write = false;
-
         if (wl_display_flush(display) < 0) {
             if (errno != EAGAIN) {
                 status = NCBAR_APP_WAYLAND_FLUSH_FAILED;
                 goto cleanup;
             }
-
             want_write = true;
         }
-
         watched.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLRDHUP;
-
         if (want_write) {
             watched.events |= EPOLLOUT;
         }
-
         if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, display_fd, &watched) < 0) {
             status = NCBAR_APP_EPOLL_MOD_FAILED;
             goto cleanup;
@@ -97,21 +94,21 @@ enum ncbar_app_error app_run(struct app *app) {
          * Sleep until the Wayland connection becomes ready.
          */
         int count;
-
         do {
             count = epoll_wait(epoll_fd, ready, 8, -1);
         } while (count < 0 && errno == EINTR);
-
         if (count < 0) {
             status = NCBAR_APP_EPOLL_WAIT_FAILED;
             goto cleanup;
         }
 
         uint32_t events = 0;
-
+        bool got_signal = false;
         for (int i = 0; i < count; ++i) {
             if (ready[i].data.fd == display_fd) {
                 events |= ready[i].events;
+            } else if (ready[i].data.fd == signal_fd) {
+                got_signal = true;
             }
         }
 
@@ -123,7 +120,6 @@ enum ncbar_app_error app_run(struct app *app) {
          */
         if (events & EPOLLIN) {
             read_prepared = false;
-
             if (wl_display_read_events(display) < 0) {
                 status = NCBAR_APP_WAYLAND_READ_FAILED;
                 goto cleanup;
@@ -150,13 +146,17 @@ enum ncbar_app_error app_run(struct app *app) {
             status = NCBAR_APP_WAYLAND_DISCONNECTED;
             goto cleanup;
         }
+        if (got_signal) {
+            app_signals_drain(signal_fd);
+            app->running = false;
+        }
     }
 
 cleanup:
     if (read_prepared) {
         wl_display_cancel_read(display);
     }
-
+    close(signal_fd);
     close(epoll_fd);
 
     return status;
