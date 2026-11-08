@@ -26,6 +26,12 @@ static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
 
 struct wayland_surface *wayland_surface_create_layer(struct wayland_context *wl_context, const struct wayland_layer_params *params, wayland_surface_callback callback,
                                                      void *userdata) {
+    if ((params->width == 0 &&
+         (params->anchor & (ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT)) != (ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT)) ||
+        (params->height == 0 &&
+         (params->anchor & (ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP | ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM)) != (ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP | ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM))) {
+        return NULL;
+    }
     struct wayland_surface *self = calloc(1, sizeof(struct wayland_surface));
     if (self == NULL) {
         return NULL;
@@ -49,9 +55,9 @@ struct wayland_surface *wayland_surface_create_layer(struct wayland_context *wl_
     }
 
     /* Width 0 + left/right anchors = "stretch across the output"; the compositor tells us the real width. */
-    zwlr_layer_surface_v1_set_size(self->layer_surface, 0, params->height);
-    zwlr_layer_surface_v1_set_anchor(self->layer_surface, ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT);
-    zwlr_layer_surface_v1_set_exclusive_zone(self->layer_surface, (int32_t)params->height);
+    zwlr_layer_surface_v1_set_size(self->layer_surface, params->width, params->height);
+    zwlr_layer_surface_v1_set_anchor(self->layer_surface, params->anchor);
+    zwlr_layer_surface_v1_set_exclusive_zone(self->layer_surface, params->exclusive_zone);
 
     wl_surface_commit(self->surface); /* buffer-less commit: asks the compositor for the first configure */
     return self;

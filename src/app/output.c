@@ -19,7 +19,13 @@ struct app_output *app_output_create(struct app *app, const struct wayland_outpu
     }
     output->registry_name = info->registry_name;
 
-    struct wayland_layer_params params = {.output = info->output, .layer = ZWLR_LAYER_SHELL_V1_LAYER_TOP, .height = APP_BAR_HEIGHT, .exclusive_zone = APP_BAR_HEIGHT};
+    struct wayland_layer_params params = {
+        .output = info->output,
+        .layer = ZWLR_LAYER_SHELL_V1_LAYER_TOP,
+        .anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT,
+        .height = APP_BAR_HEIGHT,
+        .exclusive_zone = APP_BAR_HEIGHT,
+    };
     output->surface = wayland_surface_create_layer(&app->wl_context, &params, app_output_on_surface_event, output);
     if (output->surface == NULL) {
         free(output);
@@ -40,7 +46,7 @@ void app_output_destroy(struct app_output *output) {
 }
 
 enum ncbar_app_error app_render_dirty_outputs(struct app *app) {
-    int status = NCBAR_APP_OK;
+    enum ncbar_app_error status = NCBAR_APP_OK;
 
     for (size_t i = 0; i < app->outputs_size; ++i) {
         struct app_output *output = app->outputs[i];
@@ -67,6 +73,7 @@ static void app_output_on_surface_event(enum wayland_surface_event event, struct
         break;
 
     case WAYLAND_SURFACE_CLOSED:
+        fprintf(stderr, "output %u closed\n", output->registry_name);
         /* later: destroy the renderer first */
         wayland_surface_destroy(surface);
         output->surface = NULL;
