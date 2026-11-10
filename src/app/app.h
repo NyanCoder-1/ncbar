@@ -4,12 +4,15 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "graphics/vulkan/context.h"
 #include "platform/wayland/context.h"
 
 enum ncbar_app_error {
     NCBAR_APP_OK = 0,
     NCBAR_APP_SIGNALS_INIT_FAILED,
     NCBAR_APP_WAYLAND_CONTEXT_INIT_FAILED,
+    NCBAR_APP_VULKAN_CONTEXT_INIT_FAILED,
+
     NCBAR_APP_OUTPUTS_CREATE_FAILED,
     NCBAR_APP_OUTPUTS_GROW_CAPACITY_ERROR,
     NCBAR_APP_OUTPUTS_GROW_REALLOCATE_FAILED,
@@ -29,6 +32,7 @@ enum ncbar_app_error {
 
 struct app {
     struct wayland_context wl_context;
+    struct vulkan_context vk_context;
     bool running;
 
     struct app_output **outputs;

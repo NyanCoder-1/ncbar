@@ -1,6 +1,7 @@
 #include "app/app.h"
 #include "app/output.h"
 #include "app/signals.h"
+#include "graphics/vulkan/context.h"
 #include "platform/wayland/context.h"
 
 #include <stdint.h>
@@ -21,11 +22,15 @@ enum ncbar_app_error app_init(struct app *app) {
     if (wayland_context_init(&app->wl_context, app_on_wayland_output, app) != NCBAR_WAYLAND_OK) {
         return NCBAR_APP_WAYLAND_CONTEXT_INIT_FAILED;
     }
+    if (vulkan_context_init(&app->vk_context, app->wl_context.display) != NCBAR_VULKAN_OK) {
+        return NCBAR_APP_VULKAN_CONTEXT_INIT_FAILED;
+    }
     app->running = true;
     return NCBAR_APP_OK;
 }
 void app_destroy(struct app *app) {
     app_outputs_destroy(app);
+    vulkan_context_destroy(&app->vk_context);
     wayland_context_destroy(&app->wl_context);
 }
 
