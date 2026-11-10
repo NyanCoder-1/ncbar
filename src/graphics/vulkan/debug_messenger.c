@@ -20,7 +20,7 @@ enum ncbar_vulkan_error vulkan_context_init_debug_messenger(struct vulkan_contex
     return result != VK_SUCCESS ? NCBAR_VULKAN_DEBUG_MESSENGER_INIT_FAILED : NCBAR_VULKAN_OK;
 }
 void vulkan_context_destroy_debug_messenger(struct vulkan_context *self) {
-    if (self == NULL || self->instance == VK_NULL_HANDLE || self->vk_loader_instance.vkDestroyDebugUtilsMessengerEXT == NULL)
+    if (self == NULL || self->instance == VK_NULL_HANDLE || self->debug_messenger == VK_NULL_HANDLE || self->vk_loader_instance.vkDestroyDebugUtilsMessengerEXT == NULL)
         return;
     self->vk_loader_instance.vkDestroyDebugUtilsMessengerEXT(self->instance, self->debug_messenger, NULL);
     self->debug_messenger = VK_NULL_HANDLE;
