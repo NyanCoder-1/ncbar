@@ -3,7 +3,8 @@
 #include <string.h>
 #include <vulkan/vulkan_core.h>
 
-static bool is_device_suitable(struct vulkan_context *self, VkPhysicalDevice device, uint32_t *graphics_family, enum ncbar_vulkan_graphics_queue_mode *graphics_queue_mode, struct wl_display *wl_display);
+static bool is_device_suitable(struct vulkan_context *self, VkPhysicalDevice device, uint32_t *graphics_family, enum ncbar_vulkan_graphics_queue_mode *graphics_queue_mode,
+                               struct wl_display *wl_display);
 
 static const char *const vk_device_extensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 static const uint32_t vk_device_extensions_count = sizeof(vk_device_extensions) / sizeof(vk_device_extensions[0]);
@@ -76,7 +77,8 @@ void vulkan_context_destroy_device(struct vulkan_context *self) {
 static uint32_t find_queue_family(struct vulkan_context *self, VkPhysicalDevice device, enum ncbar_vulkan_graphics_queue_mode *graphics_queue_mode, struct wl_display *wl_display);
 static bool check_device_extension_support(struct vulkan_context *self, VkPhysicalDevice device);
 
-static bool is_device_suitable(struct vulkan_context *self, VkPhysicalDevice device, uint32_t *graphics_family, enum ncbar_vulkan_graphics_queue_mode *graphics_queue_mode, struct wl_display *wl_display) {
+static bool is_device_suitable(struct vulkan_context *self, VkPhysicalDevice device, uint32_t *graphics_family, enum ncbar_vulkan_graphics_queue_mode *graphics_queue_mode,
+                               struct wl_display *wl_display) {
     const uint32_t queue_family_result = find_queue_family(self, device, graphics_queue_mode, wl_display);
     const bool extensions_supported = check_device_extension_support(self, device);
     if (queue_family_result != UINT32_MAX && extensions_supported) {
