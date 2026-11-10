@@ -6,6 +6,10 @@
 #include <vulkan/vulkan_core.h>
 
 enum ncbar_vulkan_error vulkan_context_init_debug_messenger(struct vulkan_context *self) {
+    if (self == NULL || self->instance == VK_NULL_HANDLE)
+        return NCBAR_VULKAN_DEBUG_MESSENGER_INIT_FAILED;
+    if (self->vk_loader_instance.vkCreateDebugUtilsMessengerEXT == NULL)
+        return NCBAR_VULKAN_DEBUG_MESSENGER_DOESNT_EXISTS;
     VkDebugUtilsMessengerCreateInfoEXT create_info = {0};
     create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;

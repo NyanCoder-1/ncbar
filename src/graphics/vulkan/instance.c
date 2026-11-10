@@ -7,6 +7,7 @@
 #ifndef NDEBUG
 static bool vulkan_context_check_validation_layer_support(struct vulkan_context *self);
 #endif
+static enum ncbar_vulkan_error instance_create_result_convert(VkResult result);
 
 #ifndef NDEBUG
 static const char *const vk_validation_layers[] = {"VK_LAYER_KHRONOS_validation"};
@@ -61,7 +62,7 @@ enum ncbar_vulkan_error vulkan_context_init_instance(struct vulkan_context *self
 #endif
 
     const VkResult result = self->vk_loader_global.vkCreateInstance(&create_info, NULL, &self->instance);
-    return result == VK_SUCCESS ? NCBAR_VULKAN_OK : NCBAR_VULKAN_INSTANCE_CREATE_FAILED;
+    return instance_create_result_convert(result);
 }
 
 void vulkan_context_destroy_instance(struct vulkan_context *self) {
@@ -75,17 +76,17 @@ void vulkan_context_destroy_instance(struct vulkan_context *self) {
 static bool vulkan_context_check_validation_layer_support(struct vulkan_context *self) {
     uint32_t layer_count;
     self->vk_loader_global.vkEnumerateInstanceLayerProperties(&layer_count, NULL);
-
-    VkLayerProperties available_layers[layer_count];
+    const uint32_t layer_array_size = layer_count == 0 ? 1 : layer_count;
+    VkLayerProperties available_layers[layer_array_size];
     self->vk_loader_global.vkEnumerateInstanceLayerProperties(&layer_count, available_layers);
 
     for (uint32_t vk_validation_layer_num = 0; vk_validation_layer_num < vk_validation_layers_count; vk_validation_layer_num++) {
-        const char *const layerName = vk_validation_layers[vk_validation_layer_num];
+        const char *const layer_name = vk_validation_layers[vk_validation_layer_num];
         uint8_t layer_found = false;
 
         for (uint32_t available_layers_num = 0; available_layers_num < layer_count; available_layers_num++) {
-            const VkLayerProperties layerProperties = available_layers[available_layers_num];
-            if (strncmp(layerName, layerProperties.layerName, VK_MAX_EXTENSION_NAME_SIZE) == 0) {
+            const VkLayerProperties layer_properties = available_layers[available_layers_num];
+            if (strncmp(layer_name, layer_properties.layerName, VK_MAX_EXTENSION_NAME_SIZE) == 0) {
                 layer_found = true;
                 break;
             }
@@ -99,3 +100,15 @@ static bool vulkan_context_check_validation_layer_support(struct vulkan_context 
     return true;
 }
 #endif
+static enum ncbar_vulkan_error instance_create_result_convert(VkResult result) {
+    switch (result) {
+    case VK_SUCCESS:
+        return NCBAR_VULKAN_OK;
+    case VK_ERROR_INCOMPATIBLE_DRIVER: // loader found no ICD
+        return NCBAR_VULKAN_NO_DRIVER;
+    case VK_ERROR_EXTENSION_NOT_PRESENT:
+        return NCBAR_VULKAN_EXTENSION_MISSING;
+    default:
+        return NCBAR_VULKAN_INSTANCE_CREATE_FAILED;
+    }
+}
