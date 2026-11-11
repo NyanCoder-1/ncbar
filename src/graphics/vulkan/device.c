@@ -3,8 +3,7 @@
 #include <string.h>
 #include <vulkan/vulkan_core.h>
 
-static bool is_device_suitable(struct vulkan_context *self, VkPhysicalDevice device, uint32_t *graphics_family, enum ncbar_vulkan_graphics_queue_mode *graphics_queue_mode,
-                               struct wl_display *wl_display);
+static bool is_device_suitable(struct vulkan_context *self, VkPhysicalDevice device, uint32_t *graphics_family, struct wl_display *wl_display);
 
 static const char *const vk_device_extensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 static const uint32_t vk_device_extensions_count = sizeof(vk_device_extensions) / sizeof(vk_device_extensions[0]);
@@ -19,16 +18,13 @@ enum ncbar_vulkan_error vulkan_context_init_physical_device(struct vulkan_contex
 
     VkPhysicalDevice result = VK_NULL_HANDLE;
     uint32_t graphics_family_index = 0;
-    enum ncbar_vulkan_graphics_queue_mode graphics_queue_mode = NCBAR_VULKAN_GRAPHICS_QUEUE_MODE_EXCLUSIVE;
     for (uint32_t device_num = 0; device_num < device_count; device_num++) {
         const VkPhysicalDevice device = physical_devices[device_num];
 
         uint32_t graphics_family_index_current = 0;
-        enum ncbar_vulkan_graphics_queue_mode graphics_queue_mode_current = NCBAR_VULKAN_GRAPHICS_QUEUE_MODE_EXCLUSIVE;
-        if (is_device_suitable(self, device, &graphics_family_index_current, &graphics_queue_mode_current, wl_display)) {
+        if (is_device_suitable(self, device, &graphics_family_index_current, wl_display)) {
             result = device;
             graphics_family_index = graphics_family_index_current;
-            graphics_queue_mode = graphics_queue_mode_current;
             break;
         }
     }
@@ -38,7 +34,6 @@ enum ncbar_vulkan_error vulkan_context_init_physical_device(struct vulkan_contex
 
     self->physical_device = result;
     self->graphics_queue_family = graphics_family_index;
-    self->graphics_queue_mode = graphics_queue_mode;
 
     return NCBAR_VULKAN_OK;
 }
@@ -74,12 +69,11 @@ void vulkan_context_destroy_device(struct vulkan_context *self) {
     self->device = VK_NULL_HANDLE;
 }
 
-static uint32_t find_queue_family(struct vulkan_context *self, VkPhysicalDevice device, enum ncbar_vulkan_graphics_queue_mode *graphics_queue_mode, struct wl_display *wl_display);
+static uint32_t find_queue_family(struct vulkan_context *self, VkPhysicalDevice device, struct wl_display *wl_display);
 static bool check_device_extension_support(struct vulkan_context *self, VkPhysicalDevice device);
 
-static bool is_device_suitable(struct vulkan_context *self, VkPhysicalDevice device, uint32_t *graphics_family, enum ncbar_vulkan_graphics_queue_mode *graphics_queue_mode,
-                               struct wl_display *wl_display) {
-    const uint32_t queue_family_result = find_queue_family(self, device, graphics_queue_mode, wl_display);
+static bool is_device_suitable(struct vulkan_context *self, VkPhysicalDevice device, uint32_t *graphics_family, struct wl_display *wl_display) {
+    const uint32_t queue_family_result = find_queue_family(self, device, wl_display);
     const bool extensions_supported = check_device_extension_support(self, device);
     if (queue_family_result != UINT32_MAX && extensions_supported) {
         *graphics_family = queue_family_result;
@@ -88,24 +82,21 @@ static bool is_device_suitable(struct vulkan_context *self, VkPhysicalDevice dev
     return false;
 }
 
-static uint32_t find_queue_family(struct vulkan_context *self, VkPhysicalDevice device, enum ncbar_vulkan_graphics_queue_mode *graphics_queue_mode, struct wl_display *wl_display) {
+static uint32_t find_queue_family(struct vulkan_context *self, VkPhysicalDevice device, struct wl_display *wl_display) {
     uint32_t queue_family_count = 0;
     self->vk_loader_instance.vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, NULL);
     VkQueueFamilyProperties queue_families[queue_family_count];
     self->vk_loader_instance.vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, queue_families);
 
     uint32_t result = UINT32_MAX;
-    enum ncbar_vulkan_graphics_queue_mode queue_mode = NCBAR_VULKAN_GRAPHICS_QUEUE_MODE_EXCLUSIVE;
-    for (uint32_t i = 0; i < queue_family_count; i++) {
+    for (uint32_t i = 0; i < queue_family_count && result == UINT32_MAX; i++) {
         VkBool32 present_support = self->vk_loader_instance.vkGetPhysicalDeviceWaylandPresentationSupportKHR(device, i, wl_display);
         const VkQueueFamilyProperties queue_family = queue_families[i];
         if (present_support != VK_FALSE && (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT)) {
             result = i;
-            queue_mode = queue_family.queueCount == 1 ? NCBAR_VULKAN_GRAPHICS_QUEUE_MODE_EXCLUSIVE : NCBAR_VULKAN_GRAPHICS_QUEUE_MODE_CONCURRENT;
         }
     }
 
-    *graphics_queue_mode = queue_mode;
     return result;
 }
 static bool check_device_extension_support(struct vulkan_context *self, VkPhysicalDevice device) {

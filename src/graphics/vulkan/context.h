@@ -4,11 +4,6 @@
 #include "graphics/vulkan/loader.h"
 #include <stdint.h>
 
-enum ncbar_vulkan_graphics_queue_mode {
-    NCBAR_VULKAN_GRAPHICS_QUEUE_MODE_EXCLUSIVE,
-    NCBAR_VULKAN_GRAPHICS_QUEUE_MODE_CONCURRENT,
-};
-
 struct vulkan_context {
     struct vulkan_loader_global vk_loader_global;
     struct vulkan_loader_instance vk_loader_instance;
@@ -20,7 +15,6 @@ struct vulkan_context {
     VkDevice device;
 
     uint32_t graphics_queue_family;
-    enum ncbar_vulkan_graphics_queue_mode graphics_queue_mode;
 };
 
 enum ncbar_vulkan_error {
@@ -33,7 +27,7 @@ enum ncbar_vulkan_error {
     NCBAR_VULKAN_INSTANCE_CREATE_FAILED,
     NCBAR_VULKAN_NO_DRIVER,
     NCBAR_VULKAN_EXTENSION_MISSING,
-    NCBAR_VULKAN_DEBUG_MESSENGER_DOESNT_EXISTS,
+    NCBAR_VULKAN_DEBUG_MESSENGER_DOESNT_EXIST,
     NCBAR_VULKAN_DEBUG_MESSENGER_INIT_FAILED,
     NCBAR_VULKAN_NO_VULKAN_GPU,
     NCBAR_VULKAN_NO_SUITABLE_GPU,

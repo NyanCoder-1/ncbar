@@ -74,7 +74,7 @@ void vulkan_context_destroy_instance(struct vulkan_context *self) {
 
 #ifndef NDEBUG
 static bool vulkan_context_check_validation_layer_support(struct vulkan_context *self) {
-    uint32_t layer_count;
+    uint32_t layer_count = 0;
     self->vk_loader_global.vkEnumerateInstanceLayerProperties(&layer_count, NULL);
     const uint32_t layer_array_size = layer_count == 0 ? 1 : layer_count;
     VkLayerProperties available_layers[layer_array_size];
