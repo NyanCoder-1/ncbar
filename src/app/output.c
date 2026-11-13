@@ -31,10 +31,12 @@ struct app_output *app_output_create(struct app *app, const struct wayland_outpu
     if (output->surface == NULL) {
         goto CLEANUP_SURFACE;
     }
-    struct vulkan_renderer_params vk_params = {.wl_display = app->wl_context.display,
-                                               .wl_surface = wayland_surface_get_wl_surface(output->surface),
-                                               .width = wayland_surface_get_width(output->surface),
-                                               .height = wayland_surface_get_height(output->surface)};
+    struct vulkan_renderer_params vk_params = {
+        .wl_display = app->wl_context.display,
+        .wl_surface = wayland_surface_get_wl_surface(output->surface),
+        .width = wayland_surface_get_width(output->surface),
+        .height = wayland_surface_get_height(output->surface),
+    };
     output->renderer = vulkan_renderer_init(&app->vk_context, &vk_params);
     if (output->renderer == NULL) {
         goto CLEANUP_RENDERER;
@@ -79,11 +81,17 @@ enum ncbar_app_error app_render_dirty_outputs(struct app *app) {
 
 static void app_output_on_surface_event(enum wayland_surface_event event, struct wayland_surface *surface, void *userdata) {
     struct app_output *output = userdata;
+    uint32_t width, height;
 
     switch (event) {
     case WAYLAND_SURFACE_CONFIGURED:
-        fprintf(stderr, "output %u configured: %ux%u\n", output->registry_name, wayland_surface_get_width(surface), wayland_surface_get_height(surface));
+        width = wayland_surface_get_width(surface);
+        height = wayland_surface_get_height(surface);
+        fprintf(stderr, "output %u configured: %ux%u\n", output->registry_name, width, height);
         /* later: create or resize the Vulkan swapchain here */
+        if (output->renderer != NULL && width != 0 && height != 0) {
+            vulkan_renderer_swapchain_create(output->renderer, width, height);
+        }
         output->configured = true;
         output->dirty = true;
         break;

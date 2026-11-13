@@ -13,10 +13,11 @@ struct vulkan_renderer *vulkan_renderer_init(struct vulkan_context *ctx, struct 
         vulkan_renderer_destroy(vk_renderer);
         return NULL;
     }
-    error = vulkan_renderer_swapchain_create(vk_renderer, params->width, params->height);
-    if (error != NCBAR_VULKAN_OK) {
-        vulkan_renderer_destroy(vk_renderer);
-        return NULL;
+    if (params->width != 0 && params->height != 0) {
+        error = vulkan_renderer_swapchain_create(vk_renderer, params->width, params->height);
+        if (error != NCBAR_VULKAN_OK) {
+            // TODO: report swapchain create error, but it's not critical, so do not interrupt renderer creation
+        }
     }
     return vk_renderer;
 }

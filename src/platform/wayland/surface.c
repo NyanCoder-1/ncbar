@@ -60,7 +60,6 @@ struct wayland_surface *wayland_surface_create_layer(struct wayland_context *wl_
     zwlr_layer_surface_v1_set_exclusive_zone(self->layer_surface, params->exclusive_zone);
 
     wl_surface_commit(self->surface); /* buffer-less commit: asks the compositor for the first configure */
-    wl_display_roundtrip(wl_context->display);
     return self;
 
 fail:
