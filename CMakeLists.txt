@@ -65,7 +65,6 @@ set(CGLM_SHARED OFF CACHE BOOL "" FORCE)
 set(CGLM_STATIC ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(cglm stb)
 add_library(stb_headers INTERFACE)
-target_include_directories(stb_headers SYSTEM INTERFACE "${stb_SOURCE_DIR}")
 # Submodules
 # set(CGLM_DIR "${SUBMODULES_DIR}/cglm")
 # set(CGLM_INCLUDE_DIR "${CGLM_DIR}/include")
@@ -81,9 +80,7 @@ set(INCLUDE_DIR
 	"${SOURCE_DIR}/"
 	"${INCLUDE_DIR}/"
 	"${WAYLAND_PROTOCOLS_DIR}/"
-	${VULKAN_INCLUDE_DIR}
-	# "${CGLM_INCLUDE_DIR}/"
-	# "${STB_DIR}/"
+	"${stb_SOURCE_DIR}/"
 	)
 
 add_executable(${TARGET} ${SOURCES} ${HEADERS})

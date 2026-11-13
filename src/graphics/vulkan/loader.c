@@ -53,8 +53,10 @@ enum ncbar_vulkan_error vulkan_context_init_loader_device(VkDevice device, PFN_v
     loader->vkDestroySwapchainKHR = (PFN_vkDestroySwapchainKHR)vkGetDeviceProcAddr(device, "vkDestroySwapchainKHR");
     loader->vkDeviceWaitIdle = (PFN_vkDeviceWaitIdle)vkGetDeviceProcAddr(device, "vkDeviceWaitIdle");
     loader->vkGetDeviceQueue = (PFN_vkGetDeviceQueue)vkGetDeviceProcAddr(device, "vkGetDeviceQueue");
+    loader->vkQueuePresentKHR = (PFN_vkQueuePresentKHR)vkGetDeviceProcAddr(device, "vkQueuePresentKHR");
+    loader->vkQueueSubmit = (PFN_vkQueueSubmit)vkGetDeviceProcAddr(device, "vkQueueSubmit");
     if (loader->vkCreateSwapchainKHR == NULL || loader->vkDestroyDevice == NULL || loader->vkDestroySwapchainKHR == NULL || loader->vkDeviceWaitIdle == NULL ||
-        loader->vkGetDeviceQueue == NULL) {
+        loader->vkGetDeviceQueue == NULL || loader->vkQueuePresentKHR == NULL || loader->vkQueueSubmit == NULL) {
         return NCBAR_VULKAN_LOADER_DEVICE_INIT_FAILED;
     }
 

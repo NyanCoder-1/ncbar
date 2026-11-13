@@ -38,24 +38,23 @@ enum ncbar_vulkan_error vulkan_context_init_physical_device(struct vulkan_contex
     return NCBAR_VULKAN_OK;
 }
 enum ncbar_vulkan_error vulkan_context_init_device(struct vulkan_context *self) {
-    VkDeviceQueueCreateInfo queue_create_info = {0};
-    queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queue_create_info.queueFamilyIndex = self->graphics_queue_family;
-    queue_create_info.queueCount = 1;
-    float queue_priority = 1.0f;
-    queue_create_info.pQueuePriorities = &queue_priority;
-
-    VkPhysicalDeviceFeatures device_features = {0};
-
-    VkDeviceCreateInfo createInfo = {0};
-    createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.pQueueCreateInfos = (VkDeviceQueueCreateInfo[]){queue_create_info};
-    createInfo.queueCreateInfoCount = 1;
-    createInfo.pEnabledFeatures = &device_features;
-    createInfo.enabledExtensionCount = vk_device_extensions_count;
-    createInfo.ppEnabledExtensionNames = vk_device_extensions;
-    createInfo.enabledLayerCount = 0;
-    VkResult result = self->vk_loader_instance.vkCreateDevice(self->physical_device, &createInfo, NULL, &self->device);
+    const float queue_priority = 1.0f;
+    const VkDeviceQueueCreateInfo queue_create_info = {
+        .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+        .queueFamilyIndex = self->graphics_queue_family,
+        .queueCount = 1,
+        .pQueuePriorities = &queue_priority,
+    };
+    const VkPhysicalDeviceFeatures device_features = {0};
+    const VkDeviceCreateInfo create_info = {
+        .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+        .queueCreateInfoCount = 1,
+        .pQueueCreateInfos = (const VkDeviceQueueCreateInfo[]){queue_create_info},
+        .enabledExtensionCount = vk_device_extensions_count,
+        .ppEnabledExtensionNames = vk_device_extensions,
+        .pEnabledFeatures = &device_features,
+    };
+    VkResult result = self->vk_loader_instance.vkCreateDevice(self->physical_device, &create_info, NULL, &self->device);
     if (result != VK_SUCCESS)
         return NCBAR_VULKAN_LOGICAL_DEVICE_CREATE_FAILED;
 
@@ -91,8 +90,8 @@ static uint32_t find_queue_family(struct vulkan_context *self, VkPhysicalDevice 
     uint32_t result = UINT32_MAX;
     for (uint32_t i = 0; i < queue_family_count && result == UINT32_MAX; i++) {
         VkBool32 present_support = self->vk_loader_instance.vkGetPhysicalDeviceWaylandPresentationSupportKHR(device, i, wl_display);
-        const VkQueueFamilyProperties queue_family = queue_families[i];
-        if (present_support != VK_FALSE && (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT)) {
+        const VkQueueFamilyProperties QUEUE_FAMILY = queue_families[i];
+        if (present_support != VK_FALSE && (QUEUE_FAMILY.queueFlags & VK_QUEUE_GRAPHICS_BIT)) {
             result = i;
         }
     }

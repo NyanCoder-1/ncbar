@@ -8,6 +8,7 @@
 struct app;
 struct app_output {
     struct wayland_surface *surface;
+    struct vulkan_renderer *renderer;
     uint32_t registry_name;
 
     bool configured;

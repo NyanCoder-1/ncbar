@@ -34,6 +34,8 @@ struct vulkan_loader_device {
     PFN_vkDestroySwapchainKHR vkDestroySwapchainKHR;
     PFN_vkDeviceWaitIdle vkDeviceWaitIdle;
     PFN_vkGetDeviceQueue vkGetDeviceQueue;
+    PFN_vkQueuePresentKHR vkQueuePresentKHR;
+    PFN_vkQueueSubmit vkQueueSubmit;
 };
 
 #endif

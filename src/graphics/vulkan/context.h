@@ -32,6 +32,9 @@ enum ncbar_vulkan_error {
     NCBAR_VULKAN_NO_VULKAN_GPU,
     NCBAR_VULKAN_NO_SUITABLE_GPU,
     NCBAR_VULKAN_LOGICAL_DEVICE_CREATE_FAILED,
+    NCBAR_VULKAN_SURFACE_INVALID_ARGUMENT,
+    NCBAR_VULKAN_SURFACE_CREATE_FAILED,
+    NCBAR_VULKAN_SWAPCHAIN_CREATE,
 };
 
 enum ncbar_vulkan_error vulkan_context_init(struct vulkan_context *vk_context, struct wl_display *wl_display);

@@ -20,7 +20,7 @@ static const char *const vk_instance_extensions[] = {
     VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
 #endif
 };
-static const uint32_t vkInstanceExtensionsCount = sizeof(vk_instance_extensions) / sizeof(vk_instance_extensions[0]);
+static const uint32_t vk_instance_extensions_count = sizeof(vk_instance_extensions) / sizeof(vk_instance_extensions[0]);
 
 enum ncbar_vulkan_error vulkan_context_init_instance(struct vulkan_context *self) {
 #ifndef NDEBUG
@@ -28,37 +28,39 @@ enum ncbar_vulkan_error vulkan_context_init_instance(struct vulkan_context *self
         return NCBAR_VULKAN_VALIDATION_LAYER_INIT_FAILED;
     }
 #endif
-    VkApplicationInfo app_info = {0};
-    app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    app_info.pApplicationName = "ncbar";
-    app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    app_info.pEngineName = "No Engine";
-    app_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    app_info.apiVersion = VK_API_VERSION_1_0;
+    const VkApplicationInfo app_info = {
+        .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+        .pApplicationName = "ncbar",
+        .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
+        .pEngineName = "No Engine",
+        .engineVersion = VK_MAKE_VERSION(1, 0, 0),
+        .apiVersion = VK_API_VERSION_1_0,
+    };
 
-    VkInstanceCreateInfo create_info = {0};
 #ifndef NDEBUG
-    VkDebugUtilsMessengerCreateInfoEXT debug_create_info = {0};
-    debug_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    debug_create_info.messageSeverity =
-        VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    debug_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    debug_create_info.pfnUserCallback = debug_callback;
-    debug_create_info.pUserData = NULL;
-    create_info.pNext = &debug_create_info;
+    const VkDebugUtilsMessengerCreateInfoEXT debug_create_info = {
+        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+        .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
+        .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
+        .pfnUserCallback = debug_callback,
+        .pUserData = NULL,
+    };
+    const VkInstanceCreateInfo create_info = {
+        .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+        .pNext = &debug_create_info,
+        .pApplicationInfo = &app_info,
+        .enabledLayerCount = vk_validation_layers_count,
+        .ppEnabledLayerNames = vk_validation_layers,
+        .enabledExtensionCount = vk_instance_extensions_count,
+        .ppEnabledExtensionNames = vk_instance_extensions,
+    };
 #else
-    create_info.pNext = NULL;
-#endif
-    create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    create_info.flags = 0U;
-    create_info.pApplicationInfo = &app_info;
-    create_info.enabledExtensionCount = vkInstanceExtensionsCount;
-    create_info.ppEnabledExtensionNames = vk_instance_extensions;
-#ifndef NDEBUG
-    create_info.enabledLayerCount = vk_validation_layers_count;
-    create_info.ppEnabledLayerNames = vk_validation_layers;
-#else
-    create_info.enabledLayerCount = 0;
+    const VkInstanceCreateInfo create_info = {
+        .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+        .pApplicationInfo = &app_info,
+        .enabledExtensionCount = vk_instance_extensions_count,
+        .ppEnabledExtensionNames = vk_instance_extensions,
+    };
 #endif
 
     const VkResult result = self->vk_loader_global.vkCreateInstance(&create_info, NULL, &self->instance);

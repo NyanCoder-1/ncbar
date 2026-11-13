@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "app/app.h"
+#include "graphics/vulkan/renderer.h"
 #include "platform/wayland/surface.h"
 #include "wlr-layer-shell-unstable-v1.h"
 
@@ -19,19 +20,31 @@ struct app_output *app_output_create(struct app *app, const struct wayland_outpu
     }
     output->registry_name = info->registry_name;
 
-    struct wayland_layer_params params = {
+    struct wayland_layer_params wl_params = {
         .output = info->output,
         .layer = ZWLR_LAYER_SHELL_V1_LAYER_TOP,
         .anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT,
         .height = APP_BAR_HEIGHT,
         .exclusive_zone = APP_BAR_HEIGHT,
     };
-    output->surface = wayland_surface_create_layer(&app->wl_context, &params, app_output_on_surface_event, output);
+    output->surface = wayland_surface_create_layer(&app->wl_context, &wl_params, app_output_on_surface_event, output);
     if (output->surface == NULL) {
-        free(output);
-        return NULL;
+        goto CLEANUP_SURFACE;
+    }
+    struct vulkan_renderer_params vk_params = {.wl_display = app->wl_context.display,
+                                               .wl_surface = wayland_surface_get_wl_surface(output->surface),
+                                               .width = wayland_surface_get_width(output->surface),
+                                               .height = wayland_surface_get_height(output->surface)};
+    output->renderer = vulkan_renderer_init(&app->vk_context, &vk_params);
+    if (output->renderer == NULL) {
+        goto CLEANUP_RENDERER;
     }
     return output;
+CLEANUP_RENDERER:
+    wayland_surface_destroy(output->surface);
+CLEANUP_SURFACE:
+    free(output);
+    return NULL;
 }
 
 void app_output_destroy(struct app_output *output) {
@@ -39,6 +52,9 @@ void app_output_destroy(struct app_output *output) {
         return;
     }
     /* later, in this order: renderer (swapchain, VkSurfaceKHR), then the Wayland surface */
+    if (output->renderer != NULL) {
+        vulkan_renderer_destroy(output->renderer);
+    }
     if (output->surface != NULL) { /* NULL if the compositor already closed it */
         wayland_surface_destroy(output->surface);
     }
