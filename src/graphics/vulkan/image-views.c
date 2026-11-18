@@ -16,6 +16,9 @@ enum ncbar_vulkan_error vulkan_renderer_swapchain_image_views_create(struct vulk
     const size_t images_count = arrlenu(vk_renderer->swapchain_images);
     arrsetlen(vk_renderer->swapchain_image_views, images_count);
     for (size_t i = 0; i < images_count; i++) {
+        vk_renderer->swapchain_image_views[i] = VK_NULL_HANDLE;
+    }
+    for (size_t i = 0; i < images_count; i++) {
         const VkImageViewCreateInfo create_info = {
             .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
             .image = vk_renderer->swapchain_images[i],

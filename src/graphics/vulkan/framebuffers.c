@@ -16,6 +16,9 @@ enum ncbar_vulkan_error vulkan_renderer_swapchain_framebuffers_create(struct vul
     const size_t images_count = arrlenu(vk_renderer->swapchain_images);
     arrsetlen(vk_renderer->swapchain_framebuffers, images_count);
     for (size_t i = 0; i < images_count; i++) {
+        vk_renderer->swapchain_framebuffers[i] = VK_NULL_HANDLE;
+    }
+    for (size_t i = 0; i < images_count; i++) {
         const VkFramebufferCreateInfo create_info = {
             .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
             .renderPass = vk_renderer->render_pass,

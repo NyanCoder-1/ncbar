@@ -32,19 +32,7 @@ struct app_output *app_output_create(struct app *app, const struct wayland_outpu
     if (output->surface == NULL) {
         goto CLEANUP_SURFACE;
     }
-    struct vulkan_renderer_params vk_params = {
-        .wl_display = app->wl_context.display,
-        .wl_surface = wayland_surface_get_wl_surface(output->surface),
-        .width = wayland_surface_get_width(output->surface),
-        .height = wayland_surface_get_height(output->surface),
-    };
-    output->renderer = vulkan_renderer_init(&app->vk_context, &vk_params);
-    if (output->renderer == NULL) {
-        goto CLEANUP_RENDERER;
-    }
     return output;
-CLEANUP_RENDERER:
-    wayland_surface_destroy(output->surface);
 CLEANUP_SURFACE:
     free(output);
     return NULL;
@@ -89,17 +77,17 @@ static void app_output_on_surface_event(enum wayland_surface_event event, struct
         height = wayland_surface_get_height(surface);
         if (width != 0 && height != 0) {
             if (output->renderer == NULL) {
-                struct vulkan_renderer_params p = {
+                struct vulkan_renderer_params vk_params = {
                     .wl_display = output->app->wl_context.display,
                     .wl_surface = wayland_surface_get_wl_surface(surface),
                     .width = width,
                     .height = height,
                 };
-                output->renderer = vulkan_renderer_init(&output->app->vk_context, &p);
+                output->renderer = vulkan_renderer_init(&output->app->vk_context, &vk_params);
             } else {
-                enum ncbar_vulkan_error error = vulkan_renderer_swapchain_create(output->renderer, width, height);
+                enum ncbar_vulkan_error error = vulkan_renderer_resize(output->renderer, width, height);
                 if (error != NCBAR_VULKAN_OK) {
-                    fprintf(stderr, "app_output_on_surface_event: vulkan_renderer_swapchain_create failed with %d", (int)error);
+                    fprintf(stderr, "app_output_on_surface_event: vulkan_renderer_resize failed with %d", (int)error);
                 }
             }
         }

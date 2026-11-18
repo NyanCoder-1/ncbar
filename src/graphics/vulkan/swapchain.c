@@ -98,22 +98,22 @@ static struct surface_capabilities_result get_surface_capabilities(struct vulkan
 }
 static VkSurfaceFormatKHR get_best_surface_format(struct vulkan_loader_instance vk_loader_instance, VkPhysicalDevice device, VkSurfaceKHR surface) {
     uint32_t surface_format_number = 0;
-    VkResult result = vk_loader_instance.vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &surface_format_number, VK_NULL_HANDLE);
+    VkResult result = vk_loader_instance.vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &surface_format_number, NULLL);
     if (result != VK_SUCCESS || surface_format_number == 0) {
         return (VkSurfaceFormatKHR){.format = VK_FORMAT_UNDEFINED};
     }
     VkSurfaceFormatKHR surface_formats[surface_format_number];
     memset(surface_formats, 0, sizeof(surface_formats));
-    vk_loader_instance.vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &surface_format_number, surface_formats);
+    result = vk_loader_instance.vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &surface_format_number, surface_formats);
     if (result != VK_SUCCESS) {
         return (VkSurfaceFormatKHR){.format = VK_FORMAT_UNDEFINED};
     }
 
     const VkFormat preferred_formats[] = {
         VK_FORMAT_B8G8R8A8_SRGB,
-        VK_FORMAT_B8G8R8A8_UINT,
+        VK_FORMAT_B8G8R8A8_UNORM,
         VK_FORMAT_R8G8B8A8_SRGB,
-        VK_FORMAT_R8G8B8A8_UINT,
+        VK_FORMAT_R8G8B8A8_UNORM,
     };
     const size_t preferred_formats_count = sizeof(preferred_formats) / sizeof(preferred_formats[0]);
     VkSurfaceFormatKHR best_surface_format = (VkSurfaceFormatKHR){.format = VK_FORMAT_UNDEFINED};
@@ -132,7 +132,7 @@ static VkSurfaceFormatKHR get_best_surface_format(struct vulkan_loader_instance 
 }
 static VkPresentModeKHR get_best_present_mode(struct vulkan_loader_instance vk_loader_instance, VkPhysicalDevice device, VkSurfaceKHR surface) {
     uint32_t present_mode_number = 0;
-    VkResult result = vk_loader_instance.vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &present_mode_number, VK_NULL_HANDLE);
+    VkResult result = vk_loader_instance.vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &present_mode_number, NULL);
     if (result != VK_SUCCESS || present_mode_number == 0) {
         return VK_PRESENT_MODE_MAX_ENUM_KHR;
     }

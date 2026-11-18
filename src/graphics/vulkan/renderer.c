@@ -31,13 +31,14 @@ void vulkan_renderer_destroy(struct vulkan_renderer *vk_renderer) {
         return;
     vk_renderer->context->vk_loader_device.vkDeviceWaitIdle(vk_renderer->context->device);
     vulkan_renderer_process_retirement(vk_renderer, true);
+    vulkan_renderer_swapchain_framebuffers_destroy(vk_renderer);
+    vulkan_renderer_swapchain_image_views_destroy(vk_renderer);
     vulkan_renderer_render_pass_destroy(vk_renderer);
     vulkan_renderer_swapchain_destroy(vk_renderer);
     vulkan_renderer_surface_destroy(vk_renderer);
     free(vk_renderer);
 }
 enum ncbar_vulkan_error vulkan_renderer_resize(struct vulkan_renderer *vk_renderer, uint32_t width, uint32_t height) {
-    vk_renderer->context->vk_loader_device.vkDeviceWaitIdle(vk_renderer->context->device);
     vk_renderer->swapchain_healthy = false;
     enum ncbar_vulkan_error error = vulkan_renderer_swapchain_create(vk_renderer, width, height);
     if (error != NCBAR_VULKAN_OK) {
