@@ -7,6 +7,7 @@
 
 struct app;
 struct app_output {
+    struct app *app;
     struct wayland_surface *surface;
     struct vulkan_renderer *renderer;
     uint32_t registry_name;

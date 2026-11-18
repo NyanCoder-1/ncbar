@@ -22,6 +22,9 @@ enum ncbar_vulkan_error vulkan_context_init(struct vulkan_context *vk_context, s
     if (error != NCBAR_VULKAN_OK)
         return error;
     error = vulkan_context_init_loader_device(vk_context->device, vk_context->vk_loader_instance.vkGetDeviceProcAddr, &vk_context->vk_loader_device);
+    if (error != NCBAR_VULKAN_OK)
+        return error;
+    vulkan_context_init_device_queue(vk_context);
     return error;
 }
 void vulkan_context_destroy(struct vulkan_context *vk_context) {

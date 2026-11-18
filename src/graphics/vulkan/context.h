@@ -14,6 +14,7 @@ struct vulkan_context {
     VkPhysicalDevice physical_device;
     VkDevice device;
 
+    VkQueue graphics_queue;
     uint32_t graphics_queue_family;
 };
 
@@ -36,6 +37,13 @@ enum ncbar_vulkan_error {
     NCBAR_VULKAN_SURFACE_CREATE_FAILED,
     NCBAR_VULKAN_SURFACE_FORMAT_EMPTY,
     NCBAR_VULKAN_SWAPCHAIN_CREATE,
+    NCBAR_VULKAN_SURFACE_CAPABILITIES_ERROR,
+    NCBAR_VULKAN_PRESENT_MODE_ERROR,
+    NCBAR_VULKAN_SWAPCHAIN_IMAGES_FAILED,
+    NCBAR_VULKAN_SWAPCHAIN_IMAGE_VIEW_CREATE_FAILED,
+    NCBAR_VULKAN_SWAPCHAIN_FRAMEBUFFER_CREATE_FAILED,
+    NCBAR_VULKAN_RENDER_PASS_INVALID_ARGUMENT,
+    NCBAR_VULKAN_RENDER_PASS_CREATE_FAILED,
 };
 
 enum ncbar_vulkan_error vulkan_context_init(struct vulkan_context *vk_context, struct wl_display *wl_display);
@@ -48,6 +56,7 @@ enum ncbar_vulkan_error vulkan_context_init_instance(struct vulkan_context *self
 enum ncbar_vulkan_error vulkan_context_init_debug_messenger(struct vulkan_context *self);
 enum ncbar_vulkan_error vulkan_context_init_physical_device(struct vulkan_context *self, struct wl_display *wl_display);
 enum ncbar_vulkan_error vulkan_context_init_device(struct vulkan_context *self);
+void vulkan_context_init_device_queue(struct vulkan_context *self);
 
 void vulkan_context_destroy_device(struct vulkan_context *self);
 #ifndef NDEBUG

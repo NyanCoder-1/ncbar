@@ -5,8 +5,8 @@ set(TARGET "ncbar")
 project(${PROJECT})
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_C_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_C_STANDARD 23)
 set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 
 # Enable compile_commands.json
@@ -58,7 +58,7 @@ FetchContent_Declare(
 FetchContent_Declare(
     stb
     GIT_REPOSITORY https://github.com/nothings/stb
-    GIT_TAG        a7d4c2175630e1ea5b6f8dd00ab96fed0b97b96d
+    GIT_TAG        9600522de53973336fa033a289858a4354cbb04c
     GIT_SUBMODULES ""
 )
 set(CGLM_SHARED OFF CACHE BOOL "" FORCE)

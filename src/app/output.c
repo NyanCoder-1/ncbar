@@ -18,6 +18,7 @@ struct app_output *app_output_create(struct app *app, const struct wayland_outpu
     if (output == NULL) {
         return NULL;
     }
+    output->app = app;
     output->registry_name = info->registry_name;
 
     struct wayland_layer_params wl_params = {
@@ -53,7 +54,6 @@ void app_output_destroy(struct app_output *output) {
     if (output == NULL) {
         return;
     }
-    /* later, in this order: renderer (swapchain, VkSurfaceKHR), then the Wayland surface */
     if (output->renderer != NULL) {
         vulkan_renderer_destroy(output->renderer);
     }
@@ -87,18 +87,29 @@ static void app_output_on_surface_event(enum wayland_surface_event event, struct
     case WAYLAND_SURFACE_CONFIGURED:
         width = wayland_surface_get_width(surface);
         height = wayland_surface_get_height(surface);
-        fprintf(stderr, "output %u configured: %ux%u\n", output->registry_name, width, height);
-        /* later: create or resize the Vulkan swapchain here */
-        if (output->renderer != NULL && width != 0 && height != 0) {
-            vulkan_renderer_swapchain_create(output->renderer, width, height);
+        if (width != 0 && height != 0) {
+            if (output->renderer == NULL) {
+                struct vulkan_renderer_params p = {
+                    .wl_display = output->app->wl_context.display,
+                    .wl_surface = wayland_surface_get_wl_surface(surface),
+                    .width = width,
+                    .height = height,
+                };
+                output->renderer = vulkan_renderer_init(&output->app->vk_context, &p);
+            } else {
+                enum ncbar_vulkan_error error = vulkan_renderer_swapchain_create(output->renderer, width, height);
+                if (error != NCBAR_VULKAN_OK) {
+                    fprintf(stderr, "app_output_on_surface_event: vulkan_renderer_swapchain_create failed with %d", (int)error);
+                }
+            }
         }
         output->configured = true;
         output->dirty = true;
         break;
 
     case WAYLAND_SURFACE_CLOSED:
-        fprintf(stderr, "output %u closed\n", output->registry_name);
-        /* later: destroy the renderer first */
+        vulkan_renderer_destroy(output->renderer);
+        output->renderer = NULL;
         wayland_surface_destroy(surface);
         output->surface = NULL;
         output->configured = false;

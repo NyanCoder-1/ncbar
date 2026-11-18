@@ -60,6 +60,7 @@ enum ncbar_vulkan_error vulkan_context_init_device(struct vulkan_context *self) 
 
     return NCBAR_VULKAN_OK;
 }
+void vulkan_context_init_device_queue(struct vulkan_context *self) { self->vk_loader_device.vkGetDeviceQueue(self->device, self->graphics_queue_family, 0, &self->graphics_queue); }
 
 void vulkan_context_destroy_device(struct vulkan_context *self) {
     if (self == NULL || self->device == VK_NULL_HANDLE || self->vk_loader_device.vkDestroyDevice == NULL)

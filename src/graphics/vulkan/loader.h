@@ -29,11 +29,18 @@ struct vulkan_loader_instance {
     PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR vkGetPhysicalDeviceWaylandPresentationSupportKHR;
 };
 struct vulkan_loader_device {
+    PFN_vkCreateFramebuffer vkCreateFramebuffer;
+    PFN_vkCreateImageView vkCreateImageView;
+    PFN_vkCreateRenderPass vkCreateRenderPass;
     PFN_vkCreateSwapchainKHR vkCreateSwapchainKHR;
     PFN_vkDestroyDevice vkDestroyDevice;
+    PFN_vkDestroyFramebuffer vkDestroyFramebuffer;
+    PFN_vkDestroyImageView vkDestroyImageView;
+    PFN_vkDestroyRenderPass vkDestroyRenderPass;
     PFN_vkDestroySwapchainKHR vkDestroySwapchainKHR;
     PFN_vkDeviceWaitIdle vkDeviceWaitIdle;
     PFN_vkGetDeviceQueue vkGetDeviceQueue;
+    PFN_vkGetSwapchainImagesKHR vkGetSwapchainImagesKHR;
     PFN_vkQueuePresentKHR vkQueuePresentKHR;
     PFN_vkQueueSubmit vkQueueSubmit;
 };
