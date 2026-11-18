@@ -35,3 +35,9 @@ void vulkan_context_destroy(struct vulkan_context *vk_context) {
     vulkan_context_destroy_instance(vk_context);
     vulkan_context_destroy_loader(vk_context);
 }
+
+void vulkan_context_wait_device_idle(struct vulkan_context *vk_context) {
+    if (vk_context == NULL || vk_context->device == VK_NULL_HANDLE)
+        return;
+    vk_context->vk_loader_device.vkDeviceWaitIdle(vk_context->device);
+}

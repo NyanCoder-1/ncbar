@@ -1,5 +1,6 @@
 #include "app/output.h"
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -88,6 +89,9 @@ static void app_output_on_surface_event(enum wayland_surface_event event, struct
                 enum ncbar_vulkan_error error = vulkan_renderer_resize(output->renderer, width, height);
                 if (error != NCBAR_VULKAN_OK) {
                     fprintf(stderr, "app_output_on_surface_event: vulkan_renderer_resize failed with %d", (int)error);
+                } else {
+                    vulkan_context_wait_device_idle(&output->app->vk_context);
+                    vulkan_renderer_process_retirement(output->renderer, false);
                 }
             }
         }

@@ -49,6 +49,8 @@ enum ncbar_vulkan_error {
 enum ncbar_vulkan_error vulkan_context_init(struct vulkan_context *vk_context, struct wl_display *wl_display);
 void vulkan_context_destroy(struct vulkan_context *vk_context);
 
+void vulkan_context_wait_device_idle(struct vulkan_context *vk_context);
+
 enum ncbar_vulkan_error vulkan_context_init_loader_global(struct vulkan_loader_global *loader);
 enum ncbar_vulkan_error vulkan_context_init_loader_instance(VkInstance instance, PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr, struct vulkan_loader_instance *loader);
 enum ncbar_vulkan_error vulkan_context_init_loader_device(VkDevice device, PFN_vkGetDeviceProcAddr vkGetDeviceProcAddr, struct vulkan_loader_device *loader);

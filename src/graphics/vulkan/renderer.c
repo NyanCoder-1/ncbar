@@ -50,7 +50,9 @@ enum ncbar_vulkan_error vulkan_renderer_resize(struct vulkan_renderer *vk_render
         return error;
     }
     if (vk_renderer->render_pass_image_format != vk_renderer->swapchain_image_format) {
-        arrput(vk_renderer->render_pass_retire_queue, vk_renderer->render_pass);
+        if (vk_renderer->render_pass != VK_NULL_HANDLE) {
+            arrput(vk_renderer->render_pass_retire_queue, vk_renderer->render_pass);
+        }
         vk_renderer->render_pass = VK_NULL_HANDLE;
         vk_renderer->render_pass_image_format = VK_FORMAT_UNDEFINED;
     }
@@ -72,19 +74,6 @@ void vulkan_renderer_process_retirement(struct vulkan_renderer *vk_renderer, boo
     if (vk_renderer == NULL)
         return;
 
-    // render-pass
-    for (size_t i = 0; i < arrlenu(vk_renderer->render_pass_retire_queue); ++i) {
-        if (vk_renderer->render_pass_retire_queue[i] != VK_NULL_HANDLE) {
-            vk_renderer->context->vk_loader_device.vkDestroyRenderPass(vk_renderer->context->device, vk_renderer->render_pass_retire_queue[i], NULL);
-            vk_renderer->render_pass_retire_queue[i] = VK_NULL_HANDLE;
-        }
-    }
-    if (free_arrays) {
-        arrfree(vk_renderer->render_pass_retire_queue);
-    } else {
-        arrclear(vk_renderer->render_pass_retire_queue);
-    }
-
     // framebuffers
     for (size_t i = 0; i < arrlenu(vk_renderer->swapchain_framebuffer_retire_queue); ++i) {
         if (vk_renderer->swapchain_framebuffer_retire_queue[i] != VK_NULL_HANDLE) {
@@ -96,6 +85,19 @@ void vulkan_renderer_process_retirement(struct vulkan_renderer *vk_renderer, boo
         arrfree(vk_renderer->swapchain_framebuffer_retire_queue);
     } else {
         arrclear(vk_renderer->swapchain_framebuffer_retire_queue);
+    }
+
+    // render-pass
+    for (size_t i = 0; i < arrlenu(vk_renderer->render_pass_retire_queue); ++i) {
+        if (vk_renderer->render_pass_retire_queue[i] != VK_NULL_HANDLE) {
+            vk_renderer->context->vk_loader_device.vkDestroyRenderPass(vk_renderer->context->device, vk_renderer->render_pass_retire_queue[i], NULL);
+            vk_renderer->render_pass_retire_queue[i] = VK_NULL_HANDLE;
+        }
+    }
+    if (free_arrays) {
+        arrfree(vk_renderer->render_pass_retire_queue);
+    } else {
+        arrclear(vk_renderer->render_pass_retire_queue);
     }
 
     // image_views
