@@ -40,6 +40,7 @@ enum ncbar_vulkan_error vulkan_renderer_swapchain_create(struct vulkan_renderer 
     const uint32_t queue_family_index_count = 0, *queue_family_index = NULL;
 
     VkSwapchainKHR swapchain_old = vk_renderer->swapchain;
+    vk_renderer->swapchain = VK_NULL_HANDLE;
     uint32_t min_image_count = surface_capabilities.minImageCount + 1;
     if (surface_capabilities.maxImageCount != 0 && min_image_count > surface_capabilities.maxImageCount) {
         min_image_count = surface_capabilities.maxImageCount;
@@ -83,6 +84,8 @@ enum ncbar_vulkan_error vulkan_renderer_swapchain_create(struct vulkan_renderer 
 void vulkan_renderer_swapchain_destroy(struct vulkan_renderer *vk_renderer) {
     if (vk_renderer == NULL || vk_renderer->swapchain == VK_NULL_HANDLE)
         return;
+    arrfree(vk_renderer->swapchain_images);
+    vk_renderer->swapchain_images = NULL;
     vk_renderer->context->vk_loader_device.vkDestroySwapchainKHR(vk_renderer->context->device, vk_renderer->swapchain, NULL);
     vk_renderer->swapchain = VK_NULL_HANDLE;
 }
@@ -121,9 +124,11 @@ static VkSurfaceFormatKHR get_best_surface_format(struct vulkan_loader_instance 
         for (uint32_t i = 0; i < surface_format_number; i++) {
             if (surface_formats[i].format == preferred_formats[n] && surface_formats[i].colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
                 best_surface_format = surface_formats[i];
+                goto BAIL_OUT_SURFACE_FORMAT_LOOP;
             }
         }
     }
+BAIL_OUT_SURFACE_FORMAT_LOOP:
     if (best_surface_format.format == VK_FORMAT_UNDEFINED) {
         best_surface_format = surface_formats[0];
     }

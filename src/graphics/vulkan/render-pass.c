@@ -49,6 +49,7 @@ enum ncbar_vulkan_error vulkan_renderer_render_pass_create(struct vulkan_rendere
     if (result != VK_SUCCESS) {
         return NCBAR_VULKAN_RENDER_PASS_CREATE_FAILED;
     }
+    vk_renderer->render_pass_image_format = color_attachment.format;
     vk_renderer->render_pass = render_pass;
     return NCBAR_VULKAN_OK;
 }
@@ -59,4 +60,5 @@ void vulkan_renderer_render_pass_destroy(struct vulkan_renderer *vk_renderer) {
     }
     vk_renderer->context->vk_loader_device.vkDestroyRenderPass(vk_renderer->context->device, vk_renderer->render_pass, NULL);
     vk_renderer->render_pass = VK_NULL_HANDLE;
+    vk_renderer->render_pass_image_format = VK_FORMAT_UNDEFINED;
 }

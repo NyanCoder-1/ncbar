@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <vulkan/vulkan_core.h>
 
 struct vulkan_renderer *vulkan_renderer_init(struct vulkan_context *ctx, struct vulkan_renderer_params *params) {
     struct vulkan_renderer *vk_renderer = (struct vulkan_renderer *)calloc(1, sizeof(struct vulkan_renderer));
@@ -48,6 +49,11 @@ enum ncbar_vulkan_error vulkan_renderer_resize(struct vulkan_renderer *vk_render
     if (error != NCBAR_VULKAN_OK) {
         return error;
     }
+    if (vk_renderer->render_pass_image_format != vk_renderer->swapchain_image_format) {
+        arrput(vk_renderer->render_pass_retire_queue, vk_renderer->render_pass);
+        vk_renderer->render_pass = VK_NULL_HANDLE;
+        vk_renderer->render_pass_image_format = VK_FORMAT_UNDEFINED;
+    }
     if (vk_renderer->render_pass == VK_NULL_HANDLE) {
         error = vulkan_renderer_render_pass_create(vk_renderer);
         if (error != NCBAR_VULKAN_OK) {
@@ -65,6 +71,19 @@ enum ncbar_vulkan_error vulkan_renderer_resize(struct vulkan_renderer *vk_render
 void vulkan_renderer_process_retirement(struct vulkan_renderer *vk_renderer, bool free_arrays) {
     if (vk_renderer == NULL)
         return;
+
+    // render-pass
+    for (size_t i = 0; i < arrlenu(vk_renderer->render_pass_retire_queue); ++i) {
+        if (vk_renderer->render_pass_retire_queue[i] != VK_NULL_HANDLE) {
+            vk_renderer->context->vk_loader_device.vkDestroyRenderPass(vk_renderer->context->device, vk_renderer->render_pass_retire_queue[i], NULL);
+            vk_renderer->render_pass_retire_queue[i] = VK_NULL_HANDLE;
+        }
+    }
+    if (free_arrays) {
+        arrfree(vk_renderer->render_pass_retire_queue);
+    } else {
+        arrclear(vk_renderer->render_pass_retire_queue);
+    }
 
     // framebuffers
     for (size_t i = 0; i < arrlenu(vk_renderer->swapchain_framebuffer_retire_queue); ++i) {

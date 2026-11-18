@@ -24,11 +24,13 @@ struct vulkan_renderer {
     VkFramebuffer *swapchain_framebuffers;
 
     VkFormat swapchain_image_format;
+    VkFormat render_pass_image_format;
     VkExtent2D swapchain_extent;
 
     VkSwapchainKHR *swapchain_retire_queue;
     VkImageView *swapchain_image_view_retire_queue;
     VkFramebuffer *swapchain_framebuffer_retire_queue;
+    VkRenderPass *render_pass_retire_queue;
 
     bool swapchain_healthy;
 };
