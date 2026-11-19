@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "app/app.h"
+#include "graphics/vulkan/context.h"
 #include "graphics/vulkan/renderer.h"
 #include "platform/wayland/surface.h"
 #include "wlr-layer-shell-unstable-v1.h"
@@ -58,8 +59,13 @@ enum ncbar_app_error app_render_dirty_outputs(struct app *app) {
     for (size_t i = 0; i < app->outputs_size; ++i) {
         struct app_output *output = app->outputs[i];
 
-        if (!output->configured || !output->dirty) {
+        if (!output->configured || !output->dirty || output->renderer == NULL || !output->renderer->swapchain_healthy) {
             continue;
+        }
+
+        enum ncbar_vulkan_error error = vulkan_renderer_render(output->renderer);
+        if (error != NCBAR_VULKAN_OK) {
+            return NCBAR_APP_VULKAN_RENDER_FAILED;
         }
 
         output->dirty = false;

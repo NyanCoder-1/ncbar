@@ -44,6 +44,7 @@ struct vulkan_renderer_params {
 struct vulkan_renderer *vulkan_renderer_init(struct vulkan_context *ctx, struct vulkan_renderer_params *params);
 void vulkan_renderer_destroy(struct vulkan_renderer *vk_renderer);
 enum ncbar_vulkan_error vulkan_renderer_resize(struct vulkan_renderer *vk_renderer, uint32_t width, uint32_t height);
+enum ncbar_vulkan_error vulkan_renderer_render(struct vulkan_renderer *vk_renderer);
 
 enum ncbar_vulkan_error vulkan_renderer_surface_create(struct vulkan_renderer *vk_renderer, struct wl_display *wl_display, struct wl_surface *wl_surface);
 void vulkan_renderer_surface_destroy(struct vulkan_renderer *vk_renderer);

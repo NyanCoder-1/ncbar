@@ -44,6 +44,7 @@ enum ncbar_vulkan_error {
     NCBAR_VULKAN_SWAPCHAIN_FRAMEBUFFER_CREATE_FAILED,
     NCBAR_VULKAN_RENDER_PASS_INVALID_ARGUMENT,
     NCBAR_VULKAN_RENDER_PASS_CREATE_FAILED,
+    NCBAR_VULKAN_RENDER_FAIL,
 };
 
 enum ncbar_vulkan_error vulkan_context_init(struct vulkan_context *vk_context, struct wl_display *wl_display);

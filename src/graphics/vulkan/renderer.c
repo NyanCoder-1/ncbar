@@ -126,3 +126,8 @@ void vulkan_renderer_process_retirement(struct vulkan_renderer *vk_renderer, boo
         arrclear(vk_renderer->swapchain_retire_queue);
     }
 }
+
+enum ncbar_vulkan_error vulkan_renderer_render(struct vulkan_renderer *vk_renderer) {
+    (void)vk_renderer;
+    return NCBAR_VULKAN_OK;
+}
