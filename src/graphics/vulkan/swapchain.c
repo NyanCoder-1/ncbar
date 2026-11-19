@@ -101,7 +101,7 @@ static struct surface_capabilities_result get_surface_capabilities(struct vulkan
 }
 static VkSurfaceFormatKHR get_best_surface_format(struct vulkan_loader_instance vk_loader_instance, VkPhysicalDevice device, VkSurfaceKHR surface) {
     uint32_t surface_format_number = 0;
-    VkResult result = vk_loader_instance.vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &surface_format_number, NULLL);
+    VkResult result = vk_loader_instance.vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &surface_format_number, NULL);
     if (result != VK_SUCCESS || surface_format_number == 0) {
         return (VkSurfaceFormatKHR){.format = VK_FORMAT_UNDEFINED};
     }
