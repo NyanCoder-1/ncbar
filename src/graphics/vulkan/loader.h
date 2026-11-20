@@ -29,20 +29,35 @@ struct vulkan_loader_instance {
     PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR vkGetPhysicalDeviceWaylandPresentationSupportKHR;
 };
 struct vulkan_loader_device {
+    PFN_vkAcquireNextImageKHR vkAcquireNextImageKHR;
+    PFN_vkAllocateCommandBuffers vkAllocateCommandBuffers;
+    PFN_vkBeginCommandBuffer vkBeginCommandBuffer;
+    PFN_vkCmdBeginRenderPass vkCmdBeginRenderPass;
+    PFN_vkCmdEndRenderPass vkCmdEndRenderPass;
+    PFN_vkCreateCommandPool vkCreateCommandPool;
+    PFN_vkCreateFence vkCreateFence;
     PFN_vkCreateFramebuffer vkCreateFramebuffer;
     PFN_vkCreateImageView vkCreateImageView;
     PFN_vkCreateRenderPass vkCreateRenderPass;
+    PFN_vkCreateSemaphore vkCreateSemaphore;
     PFN_vkCreateSwapchainKHR vkCreateSwapchainKHR;
+    PFN_vkDestroyCommandPool vkDestroyCommandPool;
     PFN_vkDestroyDevice vkDestroyDevice;
+    PFN_vkDestroyFence vkDestroyFence;
     PFN_vkDestroyFramebuffer vkDestroyFramebuffer;
     PFN_vkDestroyImageView vkDestroyImageView;
     PFN_vkDestroyRenderPass vkDestroyRenderPass;
+    PFN_vkDestroySemaphore vkDestroySemaphore;
     PFN_vkDestroySwapchainKHR vkDestroySwapchainKHR;
     PFN_vkDeviceWaitIdle vkDeviceWaitIdle;
+    PFN_vkEndCommandBuffer vkEndCommandBuffer;
     PFN_vkGetDeviceQueue vkGetDeviceQueue;
     PFN_vkGetSwapchainImagesKHR vkGetSwapchainImagesKHR;
     PFN_vkQueuePresentKHR vkQueuePresentKHR;
     PFN_vkQueueSubmit vkQueueSubmit;
+    PFN_vkResetCommandBuffer vkResetCommandBuffer;
+    PFN_vkResetFences vkResetFences;
+    PFN_vkWaitForFences vkWaitForFences;
 };
 
 #endif

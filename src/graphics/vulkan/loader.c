@@ -48,24 +48,42 @@ enum ncbar_vulkan_error vulkan_context_init_loader_instance(VkInstance instance,
     return NCBAR_VULKAN_OK;
 }
 enum ncbar_vulkan_error vulkan_context_init_loader_device(VkDevice device, PFN_vkGetDeviceProcAddr vkGetDeviceProcAddr, struct vulkan_loader_device *loader) {
+    loader->vkAcquireNextImageKHR = (PFN_vkAcquireNextImageKHR)vkGetDeviceProcAddr(device, "vkAcquireNextImageKHR");
+    loader->vkAllocateCommandBuffers = (PFN_vkAllocateCommandBuffers)vkGetDeviceProcAddr(device, "vkAllocateCommandBuffers");
+    loader->vkBeginCommandBuffer = (PFN_vkBeginCommandBuffer)vkGetDeviceProcAddr(device, "vkBeginCommandBuffer");
+    loader->vkCmdBeginRenderPass = (PFN_vkCmdBeginRenderPass)vkGetDeviceProcAddr(device, "vkCmdBeginRenderPass");
+    loader->vkCmdEndRenderPass = (PFN_vkCmdEndRenderPass)vkGetDeviceProcAddr(device, "vkCmdEndRenderPass");
+    loader->vkCreateCommandPool = (PFN_vkCreateCommandPool)vkGetDeviceProcAddr(device, "vkCreateCommandPool");
+    loader->vkCreateFence = (PFN_vkCreateFence)vkGetDeviceProcAddr(device, "vkCreateFence");
     loader->vkCreateFramebuffer = (PFN_vkCreateFramebuffer)vkGetDeviceProcAddr(device, "vkCreateFramebuffer");
     loader->vkCreateImageView = (PFN_vkCreateImageView)vkGetDeviceProcAddr(device, "vkCreateImageView");
     loader->vkCreateRenderPass = (PFN_vkCreateRenderPass)vkGetDeviceProcAddr(device, "vkCreateRenderPass");
+    loader->vkCreateSemaphore = (PFN_vkCreateSemaphore)vkGetDeviceProcAddr(device, "vkCreateSemaphore");
     loader->vkCreateSwapchainKHR = (PFN_vkCreateSwapchainKHR)vkGetDeviceProcAddr(device, "vkCreateSwapchainKHR");
+    loader->vkDestroyCommandPool = (PFN_vkDestroyCommandPool)vkGetDeviceProcAddr(device, "vkDestroyCommandPool");
     loader->vkDestroyDevice = (PFN_vkDestroyDevice)vkGetDeviceProcAddr(device, "vkDestroyDevice");
+    loader->vkDestroyFence = (PFN_vkDestroyFence)vkGetDeviceProcAddr(device, "vkDestroyFence");
     loader->vkDestroyFramebuffer = (PFN_vkDestroyFramebuffer)vkGetDeviceProcAddr(device, "vkDestroyFramebuffer");
     loader->vkDestroyImageView = (PFN_vkDestroyImageView)vkGetDeviceProcAddr(device, "vkDestroyImageView");
     loader->vkDestroyRenderPass = (PFN_vkDestroyRenderPass)vkGetDeviceProcAddr(device, "vkDestroyRenderPass");
+    loader->vkDestroySemaphore = (PFN_vkDestroySemaphore)vkGetDeviceProcAddr(device, "vkDestroySemaphore");
     loader->vkDestroySwapchainKHR = (PFN_vkDestroySwapchainKHR)vkGetDeviceProcAddr(device, "vkDestroySwapchainKHR");
     loader->vkDeviceWaitIdle = (PFN_vkDeviceWaitIdle)vkGetDeviceProcAddr(device, "vkDeviceWaitIdle");
+    loader->vkEndCommandBuffer = (PFN_vkEndCommandBuffer)vkGetDeviceProcAddr(device, "vkEndCommandBuffer");
     loader->vkGetDeviceQueue = (PFN_vkGetDeviceQueue)vkGetDeviceProcAddr(device, "vkGetDeviceQueue");
     loader->vkGetSwapchainImagesKHR = (PFN_vkGetSwapchainImagesKHR)vkGetDeviceProcAddr(device, "vkGetSwapchainImagesKHR");
     loader->vkQueuePresentKHR = (PFN_vkQueuePresentKHR)vkGetDeviceProcAddr(device, "vkQueuePresentKHR");
     loader->vkQueueSubmit = (PFN_vkQueueSubmit)vkGetDeviceProcAddr(device, "vkQueueSubmit");
-    if (loader->vkCreateFramebuffer == NULL || loader->vkCreateImageView == NULL || loader->vkCreateRenderPass == NULL || loader->vkCreateSwapchainKHR == NULL ||
-        loader->vkDestroyDevice == NULL || loader->vkDestroyFramebuffer == NULL || loader->vkDestroyImageView == NULL || loader->vkDestroyRenderPass == NULL ||
-        loader->vkDestroySwapchainKHR == NULL || loader->vkDeviceWaitIdle == NULL || loader->vkGetDeviceQueue == NULL || loader->vkQueuePresentKHR == NULL ||
-        loader->vkQueueSubmit == NULL) {
+    loader->vkResetCommandBuffer = (PFN_vkResetCommandBuffer)vkGetDeviceProcAddr(device, "vkResetCommandBuffer");
+    loader->vkResetFences = (PFN_vkResetFences)vkGetDeviceProcAddr(device, "vkResetFences");
+    loader->vkWaitForFences = (PFN_vkWaitForFences)vkGetDeviceProcAddr(device, "vkWaitForFences");
+    if (loader->vkAcquireNextImageKHR == NULL || loader->vkAllocateCommandBuffers == NULL || loader->vkBeginCommandBuffer == NULL || loader->vkCmdBeginRenderPass == NULL ||
+        loader->vkCmdEndRenderPass == NULL || loader->vkCreateCommandPool == NULL || loader->vkCreateFence == NULL || loader->vkCreateFramebuffer == NULL ||
+        loader->vkCreateImageView == NULL || loader->vkCreateRenderPass == NULL || loader->vkCreateSemaphore == NULL || loader->vkCreateSwapchainKHR == NULL ||
+        loader->vkDestroyCommandPool == NULL || loader->vkDestroyDevice == NULL || loader->vkDestroyFence == NULL || loader->vkDestroyFramebuffer == NULL ||
+        loader->vkDestroyImageView == NULL || loader->vkDestroyRenderPass == NULL || loader->vkDestroySwapchainKHR == NULL || loader->vkDeviceWaitIdle == NULL ||
+        loader->vkEndCommandBuffer == NULL || loader->vkGetDeviceQueue == NULL || loader->vkQueuePresentKHR == NULL || loader->vkQueueSubmit == NULL ||
+        loader->vkResetCommandBuffer == NULL || loader->vkResetFences == NULL || loader->vkWaitForFences == NULL) {
         return NCBAR_VULKAN_LOADER_DEVICE_INIT_FAILED;
     }
 
