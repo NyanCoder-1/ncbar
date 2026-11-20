@@ -113,10 +113,7 @@ static VkSurfaceFormatKHR get_best_surface_format(struct vulkan_loader_instance 
     }
 
     const VkFormat preferred_formats[] = {
-        VK_FORMAT_B8G8R8A8_SRGB,
         VK_FORMAT_B8G8R8A8_UNORM,
-        VK_FORMAT_R8G8B8A8_SRGB,
-        VK_FORMAT_R8G8B8A8_UNORM,
     };
     const size_t preferred_formats_count = sizeof(preferred_formats) / sizeof(preferred_formats[0]);
     VkSurfaceFormatKHR best_surface_format = (VkSurfaceFormatKHR){.format = VK_FORMAT_UNDEFINED};
