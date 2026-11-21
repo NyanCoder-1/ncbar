@@ -85,7 +85,6 @@ void vulkan_renderer_swapchain_destroy(struct vulkan_renderer *vk_renderer) {
     if (vk_renderer == NULL || vk_renderer->swapchain == VK_NULL_HANDLE)
         return;
     arrfree(vk_renderer->swapchain_images);
-    vk_renderer->swapchain_images = NULL;
     vk_renderer->context->vk_loader_device.vkDestroySwapchainKHR(vk_renderer->context->device, vk_renderer->swapchain, NULL);
     vk_renderer->swapchain = VK_NULL_HANDLE;
 }
