@@ -82,6 +82,10 @@ enum ncbar_vulkan_error vulkan_renderer_resize(struct vulkan_renderer *vk_render
     if (error != NCBAR_VULKAN_OK) {
         return error;
     }
+    error = vulkan_renderer_frame_semaphores_create(vk_renderer);
+    if (error != NCBAR_VULKAN_OK) {
+        return error;
+    }
 
     vk_renderer->swapchain_healthy = true;
     return NCBAR_VULKAN_OK;
@@ -158,11 +162,9 @@ void vulkan_renderer_process_retirement(struct vulkan_renderer *vk_renderer, boo
 }
 
 enum ncbar_vulkan_error vulkan_renderer_render(struct vulkan_renderer *vk_renderer) {
-    printf("render start\n");
     if (vk_renderer == NULL || !vk_renderer->swapchain_healthy) {
         return NCBAR_VULKAN_RENDER_SKIPPED;
     }
-    printf("render 1\n");
     const struct vulkan_loader_device *vk = &vk_renderer->context->vk_loader_device;
     const VkDevice device = vk_renderer->context->device;
 
@@ -170,7 +172,6 @@ enum ncbar_vulkan_error vulkan_renderer_render(struct vulkan_renderer *vk_render
     if (vk->vkWaitForFences(device, 1, &vk_renderer->in_flight, VK_TRUE, UINT64_MAX) != VK_SUCCESS) {
         return NCBAR_VULKAN_RENDER_FAIL;
     }
-    printf("render 2\n");
 
     /* 2. Acquire. Signals image_available when the image is really ready. */
     uint32_t image_index = 0;
@@ -179,33 +180,27 @@ enum ncbar_vulkan_error vulkan_renderer_render(struct vulkan_renderer *vk_render
         vk_renderer->swapchain_healthy = false; /* Stage 4 recreates it */
         return NCBAR_VULKAN_RENDER_SKIPPED;
     }
-    printf("render 3\n");
     if (result == VK_TIMEOUT || result == VK_NOT_READY) {
         return NCBAR_VULKAN_RENDER_SKIPPED;
     }
-    printf("render 4\n");
     /* VK_SUBOPTIMAL_KHR still acquired an image and signaled the semaphore, so keep going. */
     if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         return NCBAR_VULKAN_RENDER_FAIL;
     }
-    printf("render 5\n");
     if (image_index >= arrlenu(vk_renderer->render_finished) || image_index >= arrlenu(vk_renderer->swapchain_framebuffers)) {
         return NCBAR_VULKAN_RENDER_FAIL; /* per-image arrays out of sync with the swapchain: a bug */
     }
-    printf("render 6\n");
 
     /* 3. Record. */
     enum ncbar_vulkan_error error = record_clear_commands(vk_renderer, image_index);
     if (error != NCBAR_VULKAN_OK) {
         return error;
     }
-    printf("render 7\n");
 
     /* 4. Submit. Reset the fence only now, right before the submit that will signal it again. */
     if (vk->vkResetFences(device, 1, &vk_renderer->in_flight) != VK_SUCCESS) {
         return NCBAR_VULKAN_RENDER_FAIL;
     }
-    printf("render 8\n");
     /* Must match the render pass's external dependency (srcStageMask). */
     const VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     const VkSubmitInfo submit_info = {
@@ -221,7 +216,6 @@ enum ncbar_vulkan_error vulkan_renderer_render(struct vulkan_renderer *vk_render
     if (vk->vkQueueSubmit(vk_renderer->context->graphics_queue, 1, &submit_info, vk_renderer->in_flight) != VK_SUCCESS) {
         return NCBAR_VULKAN_RENDER_FAIL;
     }
-    printf("render 9\n");
 
     /* 5. Present. This is also what commits the wl_surface. */
     const VkPresentInfoKHR present_info = {
@@ -237,11 +231,9 @@ enum ncbar_vulkan_error vulkan_renderer_render(struct vulkan_renderer *vk_render
         vk_renderer->swapchain_healthy = false;
         return NCBAR_VULKAN_RENDER_SKIPPED;
     }
-    printf("render 10\n");
     if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         return NCBAR_VULKAN_RENDER_FAIL;
     }
-    printf("render good\n");
     return NCBAR_VULKAN_OK;
 }
 
@@ -261,7 +253,7 @@ static enum ncbar_vulkan_error record_clear_commands(struct vulkan_renderer *vk_
     }
 
     /* The color lives here, not in the render pass. Opaque for now (alpha = 1). */
-    const VkClearValue clear_value = {.color = {.float32 = {1.0f, 1.0f, 1.0f, 1.0f}}};
+    const VkClearValue clear_value = {.color = {.float32 = {0.10f, 0.10f, 0.12f, 0.5f}}};
     const VkRenderPassBeginInfo render_pass_begin_info = {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
         .renderPass = vk_renderer->render_pass,

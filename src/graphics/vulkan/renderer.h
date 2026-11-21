@@ -70,6 +70,7 @@ enum ncbar_vulkan_error vulkan_renderer_frame_resources_create(struct vulkan_ren
 void vulkan_renderer_frame_resources_destroy(struct vulkan_renderer *vk_renderer);
 enum ncbar_vulkan_error vulkan_renderer_sync_objects_create(struct vulkan_renderer *vk_renderer);
 enum ncbar_vulkan_error vulkan_renderer_semaphore_create(struct vulkan_context *vk_ctx, VkSemaphore *semaphore);
+enum ncbar_vulkan_error vulkan_renderer_frame_semaphores_create(struct vulkan_renderer *vk_renderer);
 void vulkan_renderer_sync_objects_destroy(struct vulkan_renderer *vk_renderer);
 void vulkan_renderer_process_retirement(struct vulkan_renderer *vk_renderer, bool free_arrays);
 

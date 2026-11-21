@@ -67,7 +67,6 @@ enum ncbar_app_error app_render_dirty_outputs(struct app *app) {
         if (error == NCBAR_VULKAN_RENDER_SKIPPED) {
             continue;
         } else if (error != NCBAR_VULKAN_OK) {
-            printf("render %lu failed\n", i);
             return NCBAR_APP_VULKAN_RENDER_FAILED;
         }
 

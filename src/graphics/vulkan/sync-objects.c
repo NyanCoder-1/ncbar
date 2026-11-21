@@ -44,6 +44,7 @@ enum ncbar_vulkan_error vulkan_renderer_sync_objects_create(struct vulkan_render
     }
     const VkFenceCreateInfo fence_info = {
         .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+        .flags = VK_FENCE_CREATE_SIGNALED_BIT,
     };
     if (vk_renderer->context->vk_loader_device.vkCreateFence(vk_renderer->context->device, &fence_info, NULL, &vk_renderer->in_flight) != VK_SUCCESS) {
         return NCBAR_VULKAN_FENCE_CREATE_FAILED;
