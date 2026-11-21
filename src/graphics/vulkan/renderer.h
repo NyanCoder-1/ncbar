@@ -31,6 +31,16 @@ struct vulkan_renderer {
     VkImageView *swapchain_image_view_retire_queue;
     VkFramebuffer *swapchain_framebuffer_retire_queue;
     VkRenderPass *render_pass_retire_queue;
+    VkSemaphore *vk_semaphore_retire_queue;
+
+    // frame resources
+    VkCommandPool command_pool;
+    VkCommandBuffer command_buffer;
+
+    // sync objects
+    VkSemaphore image_available;
+    VkFence in_flight;
+    VkSemaphore *render_finished;
 
     bool swapchain_healthy;
 };
@@ -56,6 +66,11 @@ enum ncbar_vulkan_error vulkan_renderer_swapchain_image_views_create(struct vulk
 void vulkan_renderer_swapchain_image_views_destroy(struct vulkan_renderer *vk_renderer);
 enum ncbar_vulkan_error vulkan_renderer_swapchain_framebuffers_create(struct vulkan_renderer *vk_renderer);
 void vulkan_renderer_swapchain_framebuffers_destroy(struct vulkan_renderer *vk_renderer);
+enum ncbar_vulkan_error vulkan_renderer_frame_resources_create(struct vulkan_renderer *vk_renderer);
+void vulkan_renderer_frame_resources_destroy(struct vulkan_renderer *vk_renderer);
+enum ncbar_vulkan_error vulkan_renderer_sync_objects_create(struct vulkan_renderer *vk_renderer);
+enum ncbar_vulkan_error vulkan_renderer_semaphore_create(struct vulkan_context *vk_ctx, VkSemaphore *semaphore);
+void vulkan_renderer_sync_objects_destroy(struct vulkan_renderer *vk_renderer);
 void vulkan_renderer_process_retirement(struct vulkan_renderer *vk_renderer, bool free_arrays);
 
 #endif

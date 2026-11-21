@@ -25,6 +25,16 @@ struct vulkan_renderer *vulkan_renderer_init(struct vulkan_context *ctx, struct 
             // TODO: report swapchain create error, but it's not critical, so do not interrupt renderer creation
         }
     }
+    error = vulkan_renderer_frame_resources_create(vk_renderer);
+    if (error != NCBAR_VULKAN_OK) {
+        vulkan_renderer_destroy(vk_renderer);
+        return NULL;
+    }
+    error = vulkan_renderer_sync_objects_create(vk_renderer);
+    if (error != NCBAR_VULKAN_OK) {
+        vulkan_renderer_destroy(vk_renderer);
+        return NULL;
+    }
     return vk_renderer;
 }
 void vulkan_renderer_destroy(struct vulkan_renderer *vk_renderer) {
@@ -32,6 +42,8 @@ void vulkan_renderer_destroy(struct vulkan_renderer *vk_renderer) {
         return;
     vk_renderer->context->vk_loader_device.vkDeviceWaitIdle(vk_renderer->context->device);
     vulkan_renderer_process_retirement(vk_renderer, true);
+    vulkan_renderer_sync_objects_destroy(vk_renderer);
+    vulkan_renderer_frame_resources_destroy(vk_renderer);
     vulkan_renderer_swapchain_framebuffers_destroy(vk_renderer);
     vulkan_renderer_swapchain_image_views_destroy(vk_renderer);
     vulkan_renderer_render_pass_destroy(vk_renderer);
@@ -66,6 +78,7 @@ enum ncbar_vulkan_error vulkan_renderer_resize(struct vulkan_renderer *vk_render
     if (error != NCBAR_VULKAN_OK) {
         return error;
     }
+
     vk_renderer->swapchain_healthy = true;
     return NCBAR_VULKAN_OK;
 }
@@ -73,6 +86,19 @@ enum ncbar_vulkan_error vulkan_renderer_resize(struct vulkan_renderer *vk_render
 void vulkan_renderer_process_retirement(struct vulkan_renderer *vk_renderer, bool free_arrays) {
     if (vk_renderer == NULL)
         return;
+
+    // semaphores
+    for (size_t i = 0; i < arrlenu(vk_renderer->vk_semaphore_retire_queue); i++) {
+        if (vk_renderer->vk_semaphore_retire_queue[i] != VK_NULL_HANDLE) {
+            vk_renderer->context->vk_loader_device.vkDestroySemaphore(vk_renderer->context->device, vk_renderer->vk_semaphore_retire_queue[i], NULL);
+            vk_renderer->vk_semaphore_retire_queue[i] = VK_NULL_HANDLE;
+        }
+    }
+    if (free_arrays) {
+        arrfree(vk_renderer->vk_semaphore_retire_queue);
+    } else {
+        arrclear(vk_renderer->vk_semaphore_retire_queue);
+    }
 
     // framebuffers
     for (size_t i = 0; i < arrlenu(vk_renderer->swapchain_framebuffer_retire_queue); ++i) {
@@ -128,6 +154,10 @@ void vulkan_renderer_process_retirement(struct vulkan_renderer *vk_renderer, boo
 }
 
 enum ncbar_vulkan_error vulkan_renderer_render(struct vulkan_renderer *vk_renderer) {
+    const VkCommandBufferBeginInfo begin_info = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+    };
     (void)vk_renderer;
+    (void)begin_info;
     return NCBAR_VULKAN_OK;
 }

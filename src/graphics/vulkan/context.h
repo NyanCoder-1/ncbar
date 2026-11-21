@@ -45,6 +45,10 @@ enum ncbar_vulkan_error {
     NCBAR_VULKAN_RENDER_PASS_INVALID_ARGUMENT,
     NCBAR_VULKAN_RENDER_PASS_CREATE_FAILED,
     NCBAR_VULKAN_RENDER_FAIL,
+    NCBAR_VULKAN_COMMAND_POOL_CREATE_FAILED,
+    NCBAR_VULKAN_COMMAND_BUFFER_ALLOCATE_FAILED,
+    NCBAR_VULKAN_SEMAPHORE_CREATE_FAILED,
+    NCBAR_VULKAN_FENCE_CREATE_FAILED,
 };
 
 enum ncbar_vulkan_error vulkan_context_init(struct vulkan_context *vk_context, struct wl_display *wl_display);
