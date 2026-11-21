@@ -9,6 +9,7 @@
 constexpr unsigned long long ACQUIRE_TIMEOUT_NS = 1000000000ULL;
 
 static enum ncbar_vulkan_error record_clear_commands(struct vulkan_renderer *vk_renderer, uint32_t image_index);
+static enum ncbar_vulkan_error vulkan_renderer_recreate_swapchain(struct vulkan_renderer *vk_renderer, uint32_t width, uint32_t height);
 
 struct vulkan_renderer *vulkan_renderer_init(struct vulkan_context *ctx, struct vulkan_renderer_params *params) {
     struct vulkan_renderer *vk_renderer = (struct vulkan_renderer *)calloc(1, sizeof(struct vulkan_renderer));
@@ -56,6 +57,7 @@ void vulkan_renderer_destroy(struct vulkan_renderer *vk_renderer) {
     free(vk_renderer);
 }
 enum ncbar_vulkan_error vulkan_renderer_resize(struct vulkan_renderer *vk_renderer, uint32_t width, uint32_t height) {
+    vk_renderer->last_requested_extent = (VkExtent2D){.width = width, .height = height};
     vk_renderer->swapchain_healthy = false;
     enum ncbar_vulkan_error error = vulkan_renderer_swapchain_create(vk_renderer, width, height);
     if (error != NCBAR_VULKAN_OK) {
@@ -162,8 +164,16 @@ void vulkan_renderer_process_retirement(struct vulkan_renderer *vk_renderer, boo
 }
 
 enum ncbar_vulkan_error vulkan_renderer_render(struct vulkan_renderer *vk_renderer) {
-    if (vk_renderer == NULL || !vk_renderer->swapchain_healthy) {
+    if (vk_renderer == NULL) {
         return NCBAR_VULKAN_RENDER_SKIPPED;
+    }
+    if (!vk_renderer->swapchain_healthy) {
+        if (vk_renderer->last_requested_extent.width == 0 || vk_renderer->last_requested_extent.height == 0) {
+            return NCBAR_VULKAN_RENDER_SKIPPED;
+        }
+        if (vulkan_renderer_recreate_swapchain(vk_renderer, vk_renderer->last_requested_extent.width, vk_renderer->last_requested_extent.height) != NCBAR_VULKAN_OK) {
+            return NCBAR_VULKAN_RENDER_SKIPPED;
+        }
     }
     const struct vulkan_loader_device *vk = &vk_renderer->context->vk_loader_device;
     const VkDevice device = vk_renderer->context->device;
@@ -268,5 +278,15 @@ static enum ncbar_vulkan_error record_clear_commands(struct vulkan_renderer *vk_
     if (vk->vkEndCommandBuffer(cmd) != VK_SUCCESS) {
         return NCBAR_VULKAN_RENDER_FAIL;
     }
+    return NCBAR_VULKAN_OK;
+}
+
+static enum ncbar_vulkan_error vulkan_renderer_recreate_swapchain(struct vulkan_renderer *vk_renderer, uint32_t width, uint32_t height) {
+    enum ncbar_vulkan_error error = vulkan_renderer_resize(vk_renderer, width, height);
+    if (error != NCBAR_VULKAN_OK) {
+        return error;
+    }
+    vk_renderer->context->vk_loader_device.vkDeviceWaitIdle(vk_renderer->context->device);
+    vulkan_renderer_process_retirement(vk_renderer, false);
     return NCBAR_VULKAN_OK;
 }

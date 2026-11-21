@@ -26,6 +26,7 @@ struct vulkan_renderer {
     VkFormat swapchain_image_format;
     VkFormat render_pass_image_format;
     VkExtent2D swapchain_extent;
+    VkExtent2D last_requested_extent;
 
     VkSwapchainKHR *swapchain_retire_queue;
     VkImageView *swapchain_image_view_retire_queue;
