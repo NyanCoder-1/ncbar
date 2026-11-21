@@ -1,6 +1,7 @@
 #include "graphics/vulkan/context.h"
 #include "graphics/vulkan/renderer.h"
 #include <stb_ds.h>
+#include <stdio.h>
 #include <vulkan/vulkan_core.h>
 
 enum ncbar_vulkan_error vulkan_renderer_semaphore_create(struct vulkan_context *vk_ctx, VkSemaphore *semaphore) {
@@ -47,6 +48,7 @@ enum ncbar_vulkan_error vulkan_renderer_sync_objects_create(struct vulkan_render
     if (vk_renderer->context->vk_loader_device.vkCreateFence(vk_renderer->context->device, &fence_info, NULL, &vk_renderer->in_flight) != VK_SUCCESS) {
         return NCBAR_VULKAN_FENCE_CREATE_FAILED;
     }
+    printf("sync objects create\n");
     return NCBAR_VULKAN_OK;
 }
 void vulkan_renderer_sync_objects_destroy(struct vulkan_renderer *vk_renderer) {
