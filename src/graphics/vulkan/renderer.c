@@ -9,7 +9,6 @@
 constexpr unsigned long long ACQUIRE_TIMEOUT_NS = 1000000000ULL;
 
 static enum ncbar_vulkan_error record_clear_commands(struct vulkan_renderer *vk_renderer, uint32_t image_index);
-static enum ncbar_vulkan_error vulkan_renderer_recreate_swapchain(struct vulkan_renderer *vk_renderer, uint32_t width, uint32_t height);
 
 struct vulkan_renderer *vulkan_renderer_init(struct vulkan_context *ctx, struct vulkan_renderer_params *params) {
     struct vulkan_renderer *vk_renderer = (struct vulkan_renderer *)calloc(1, sizeof(struct vulkan_renderer));
@@ -26,7 +25,7 @@ struct vulkan_renderer *vulkan_renderer_init(struct vulkan_context *ctx, struct 
     if (params->width != 0 && params->height != 0) {
         error = vulkan_renderer_resize(vk_renderer, params->width, params->height);
         if (error != NCBAR_VULKAN_OK) {
-            fprintf(stderr, "vulkan_renderer_init: vulkan_renderer_swapchain_create failed with %d", (int)error);
+            fprintf(stderr, "vulkan_renderer_init: vulkan_renderer_swapchain_create failed with %d\n", (int)error);
             // TODO: report swapchain create error, but it's not critical, so do not interrupt renderer creation
         }
     }
@@ -263,7 +262,7 @@ static enum ncbar_vulkan_error record_clear_commands(struct vulkan_renderer *vk_
     }
 
     /* The color lives here, not in the render pass. Opaque for now (alpha = 1). */
-    const VkClearValue clear_value = {.color = {.float32 = {0.10f, 0.10f, 0.12f, 0.5f}}};
+    const VkClearValue clear_value = {.color = {.float32 = {0.10f, 0.10f, 0.12f, 0.0f}}};
     const VkRenderPassBeginInfo render_pass_begin_info = {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
         .renderPass = vk_renderer->render_pass,
@@ -281,7 +280,7 @@ static enum ncbar_vulkan_error record_clear_commands(struct vulkan_renderer *vk_
     return NCBAR_VULKAN_OK;
 }
 
-static enum ncbar_vulkan_error vulkan_renderer_recreate_swapchain(struct vulkan_renderer *vk_renderer, uint32_t width, uint32_t height) {
+enum ncbar_vulkan_error vulkan_renderer_recreate_swapchain(struct vulkan_renderer *vk_renderer, uint32_t width, uint32_t height) {
     enum ncbar_vulkan_error error = vulkan_renderer_resize(vk_renderer, width, height);
     if (error != NCBAR_VULKAN_OK) {
         return error;

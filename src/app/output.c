@@ -59,7 +59,7 @@ enum ncbar_app_error app_render_dirty_outputs(struct app *app) {
     for (size_t i = 0; i < app->outputs_size; ++i) {
         struct app_output *output = app->outputs[i];
 
-        if (!output->configured || !output->dirty || output->renderer == NULL || !output->renderer->swapchain_healthy) {
+        if (!output->configured || !output->dirty || output->renderer == NULL) {
             continue;
         }
 
@@ -94,12 +94,9 @@ static void app_output_on_surface_event(enum wayland_surface_event event, struct
                 };
                 output->renderer = vulkan_renderer_init(&output->app->vk_context, &vk_params);
             } else {
-                enum ncbar_vulkan_error error = vulkan_renderer_resize(output->renderer, width, height);
+                enum ncbar_vulkan_error error = vulkan_renderer_recreate_swapchain(output->renderer, width, height);
                 if (error != NCBAR_VULKAN_OK) {
-                    fprintf(stderr, "app_output_on_surface_event: vulkan_renderer_resize failed with %d", (int)error);
-                } else {
-                    vulkan_context_wait_device_idle(&output->app->vk_context);
-                    vulkan_renderer_process_retirement(output->renderer, false);
+                    fprintf(stderr, "app_output_on_surface_event: vulkan_renderer_resize failed with %d\n", (int)error);
                 }
             }
         }

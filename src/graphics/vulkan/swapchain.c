@@ -82,9 +82,12 @@ enum ncbar_vulkan_error vulkan_renderer_swapchain_create(struct vulkan_renderer 
     return error;
 }
 void vulkan_renderer_swapchain_destroy(struct vulkan_renderer *vk_renderer) {
-    if (vk_renderer == NULL || vk_renderer->swapchain == VK_NULL_HANDLE)
+    if (vk_renderer == NULL)
         return;
-    arrfree(vk_renderer->swapchain_images);
+    if (vk_renderer->swapchain == VK_NULL_HANDLE) {
+        arrfree(vk_renderer->swapchain_images);
+        return;
+    }
     vk_renderer->context->vk_loader_device.vkDestroySwapchainKHR(vk_renderer->context->device, vk_renderer->swapchain, NULL);
     vk_renderer->swapchain = VK_NULL_HANDLE;
 }
